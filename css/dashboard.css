@@ -1,0 +1,134 @@
+/* @group Front page */
+
+#psstats_chart {
+	color: #a7aaad;
+	flex: 0 0 100%;
+	direction: rtl;
+	height: 140px;
+	margin: 0 -4px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	text-align: center;
+}
+
+#psstats_chart_data {
+	display: none;
+}
+
+#psstats_chart .ct-label.ct-vertical.ct-start {
+	-webkit-justify-content: flex-start;
+	justify-content: flex-start;
+	text-align: left;
+	text-anchor: start;
+}
+
+#psstats_chart .ct-line {
+	stroke: #3582c4;
+	stroke-width: 2px;
+}
+
+#psstats_chart .ct-point {
+	fill: #fff;
+	stroke: #3582c4;
+	stroke-width: 1.5px;
+}
+
+#psstats_chart .ct-area {
+	fill: #3582c4;
+}
+
+.psstats-chartist-tooltip {
+	border: 1px solid #000;
+	background-color: #fff;
+	border-radius: 0.2em;
+	padding: 0.1em 0.5em;
+}
+
+.psstats-chartist-tooltip::before {
+	border-top-color: #0009;
+}
+
+.psstats-chartist-tooltip .chartist-tooltip-meta {
+	color: #3582c4;
+}
+
+#psstats_dashboard .postbox-title-action a,
+#psstats_dashboard .settings-link a {
+	display: block;
+	line-height: 20px;
+	text-decoration: none;
+}
+
+#psstats_dashboard .inside {
+	display: flex;
+	flex-wrap: wrap;
+	height: 1%;
+	margin: 0;
+	padding-bottom: 0;
+	overflow: hidden;
+	position: relative;
+}
+
+#psstats_dashboard.closed .inside {
+	display: none;
+}
+
+#psstats_dashboard .table {
+	padding-bottom: 12px;
+}
+
+#psstats_dashboard .table p.sub {
+	color: #646970;
+	margin: 0 0 -4px;
+}
+
+#psstats_dashboard .table div {
+	overflow: hidden;
+}
+
+#psstats_dashboard .table.referrer,
+#psstats_dashboard .table.target {
+	flex: 1 0 50%;
+}
+
+#psstats_dashboard .table.total {
+	flex: 0 0 100%;
+}
+
+#psstats_dashboard td {
+	padding: 8px 0 0;
+	line-height: 1.4;
+}
+
+#psstats_dashboard td.b {
+	text-align: right;
+	padding-right: 4px;
+	color: #646970;
+}
+
+#psstats_dashboard label {
+	display: block;
+	margin-bottom: 1.1em !important;
+}
+
+/* @end group */
+
+
+/* @group Back stage */
+
+#psstats_dashboard form {
+	flex: 0 0 100%;
+	padding: 18px 0;
+}
+
+#psstats_dashboard input[type="number"] {
+	width: 100px;
+}
+
+#psstats_dashboard .meta-links {
+	float: right;
+	margin: 0;
+	line-height: 28px;
+}
+
+/* @end group */

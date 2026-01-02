@@ -1,0 +1,94 @@
+@charset "UTF-8";
+
+.eefpsstats table {
+	border-collapse: collapse;
+	clear: both;
+}
+
+.eefpsstats td,
+.eefpsstats th {
+	padding: 0.7em;
+	vertical-align: top;
+}
+
+.eefpsstats .right {
+	text-align: right;
+	min-width: 2.5em;
+}
+
+.eefpsstats .sum {
+	font-weight: bold;
+}
+
+.eefpsstats legend {
+	margin: 1em 0;
+	font-weight: bold;
+}
+
+.eefpsstats input[type="date"],
+.eefpsstats select {
+	margin-right: 25px;
+}
+
+/* Chart container */
+.eefpsstats .chart-container {
+	background: #fff;
+	margin: 1em 0;
+}
+
+/* Chart title */
+.eefpsstats .chart-title,
+.eefpsstats .chart-subtitle {
+	text-align: center;
+	font-size: 1.5em;
+	padding: 0.5em 0;
+}
+
+.eefpsstats .chart-subtitle {
+	font-size: 1.1em;
+}
+
+/* Background for area below lines */
+.eefpsstats .ct-area {
+	fill: #0074a2;
+}
+
+/* Color of points and lines */
+.eefpsstats .ct-point,
+.eefpsstats .ct-series-a .ct-bar,
+.eefpsstats .ct-series-a .ct-line {
+	stroke: #0074a2;
+}
+
+/* Size of points */
+.eefpsstats .ct-point {
+	stroke-width: 8px;
+}
+
+/* Tooltip */
+.eefpsstats-ct-tooltip {
+	border: 1px solid #453d3f;
+	background-color: #fff;
+	border-radius: 0.2em;
+	padding: 0.25em;
+}
+
+/* Arrow below tooltip */
+.eefpsstats-ct-tooltip::before {
+	border-top-color: #453d3f;
+}
+
+/* Tooltip text first line */
+.eefpsstats-ct-tooltip .chartist-tooltip-meta {
+	color: #0074a2;
+}
+
+/* Legend */
+.eefpsstats .chart-legend {
+	padding: 5px 20px;
+}
+
+.eefpsstats .chart-legend ol {
+	column-width: 20em;
+	column-gap: 20px;
+}

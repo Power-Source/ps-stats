@@ -1,0 +1,994 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PS-Stats\n"
+"POT-Creation-Date: 2023-09-24 15:40+0200\n"
+"PO-Revision-Date: 2023-09-24 15:42+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: de_AT\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.3.2\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-Flags-xgettext: --add-comments=translators:\n"
+"X-Poedit-WPHeader: ps-stats.php\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
+"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
+"_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.min.js\n"
+
+
+#: inc/class-psstats-backend.php:43 inc/class-psstats-settings.php:370
+#: views/widget-back.php:51
+#, fuzzy
+msgid "https://wordpress.org/support/plugin/psstats"
+msgstr "https://wordpress.org/support/plugin/psstats"
+
+#: inc/class-psstats-backend.php:43 inc/class-psstats-settings.php:370
+#: views/widget-back.php:51
+msgid "Support"
+msgstr "Hilfe"
+
+#: inc/class-psstats-backend.php:76
+#: inc/psstats-blacklist/inc/class-psstatsblacklist-admin.php:212
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: inc/class-psstats-dashboard.php:146
+#, fuzzy
+msgid "Pageview"
+msgstr "Pageview"
+
+#: inc/class-psstats-dashboard.php:147
+#, fuzzy
+msgid "Pageviews"
+msgstr "Seitenaufrufe"
+
+#: inc/class-psstats-settings.php:32
+#, fuzzy
+msgid "Global settings"
+msgstr "Globale Einstellungen"
+
+#: inc/class-psstats-settings.php:38
+#, fuzzy
+msgid "Period of data saving"
+msgstr "Zeitraum der Datenspeicherung"
+
+#: inc/class-psstats-settings.php:46
+#, fuzzy
+msgid "Tracking method"
+msgstr "Verfolgungsmethode"
+
+#: inc/class-psstats-settings.php:56
+#, fuzzy
+msgid "Dashboard Widget"
+msgstr "Dashboard Widget"
+
+#: inc/class-psstats-settings.php:62 views/widget-back.php:30
+#, fuzzy
+msgid "Period of data display in Dashboard"
+msgstr "Zeitraum der Datenanzeige im Dashboard"
+
+#: inc/class-psstats-settings.php:70 views/widget-back.php:35
+#, fuzzy
+msgid "Number of entries in top lists"
+msgstr "Anzahl der Einträge in Top-Listen"
+
+#: inc/class-psstats-settings.php:78
+#, fuzzy
+msgid "Top lists only for today"
+msgstr "Toplisten nur für heute"
+
+#: inc/class-psstats-settings.php:86 views/widget-back.php:43
+#, fuzzy
+msgid "Show totals"
+msgstr "Summen anzeigen"
+
+#: inc/class-psstats-settings.php:96
+#, fuzzy
+msgid "Skip tracking for ..."
+msgstr "Tracking überspringen für ..."
+
+#: inc/class-psstats-settings.php:102
+#, fuzzy
+msgid "Disallowed referrers"
+msgstr "Unzulässige Referrer"
+
+#: inc/class-psstats-settings.php:110
+msgid "Logged in users"
+msgstr "Angemeldete Benutzer"
+
+#: inc/class-psstats-settings.php:126 inc/class-psstats-settings.php:188
+#: views/widget-back.php:29
+msgid "days"
+msgstr "Tag(e)"
+
+#: inc/class-psstats-settings.php:127 inc/class-psstats-settings.php:189
+#: inc/class-psstats-settings.php:201 inc/class-psstats-settings.php:213
+#: inc/class-psstats-settings.php:225 inc/class-psstats-settings.php:250
+#: inc/class-psstats-settings.php:263
+msgid "Default"
+msgstr "Standard"
+
+#: inc/class-psstats-settings.php:139
+#, fuzzy
+msgid "Default tracking"
+msgstr "Standard-Tracking"
+
+#: inc/class-psstats-settings.php:141
+#, fuzzy
+msgid "JavaScript based tracking with nonce check"
+msgstr "JavaScript-basiertes Tracking mit Nonce-Prüfung"
+
+#: inc/class-psstats-settings.php:143
+#, fuzzy
+msgid "JavaScript based tracking without nonce check"
+msgstr "JavaScript-basiertes Tracking ohne Nonce-Prüfung"
+
+#: inc/class-psstats-settings.php:146
+#, fuzzy
+msgid ""
+"JavaScript based tracking is strongly recommended if caching or AMP is in "
+"use."
+msgstr ""
+"JavaScript-basiertes Tracking wird dringend empfohlen, wenn Caching oder AMP "
+"verwendet wird."
+
+#: inc/class-psstats-settings.php:147
+#, fuzzy
+msgid ""
+"Disable the nonce check if the caching time is longer than the nonce time or "
+"you miss views due to 403 Forbidden errors."
+msgstr ""
+"Deaktiviere die Nonce-Prüfung, wenn die Caching-Zeit länger ist als die "
+"Nonce-Zeit oder du aufgrund von 403 Forbidden-Fehlern Ansichten verpasst."
+
+#: inc/class-psstats-settings.php:175
+#, fuzzy
+msgid "The following options affect the admin dashboard widget."
+msgstr "Die folgenden Optionen wirken sich auf das Admin Dashboard Widget aus."
+
+#: inc/class-psstats-settings.php:213 inc/class-psstats-settings.php:225
+#: inc/class-psstats-settings.php:250
+msgid "No"
+msgstr "Nein"
+
+#: inc/class-psstats-settings.php:237
+#, fuzzy
+msgid ""
+"The following options define cases in which a view will <strong>not</strong> "
+"be tracked."
+msgstr ""
+"Die folgenden Optionen legen fest, in welchen Fällen eine Ansicht "
+"<strong>nicht</strong> nachverfolgt werden soll."
+
+#: inc/class-psstats-settings.php:251
+#, fuzzy
+msgid ""
+"Enabling this option excludes any views with referrers listed in the list of "
+"disallowed comment keys."
+msgstr ""
+"Wenn du diese Option aktivierst, werden alle Ansichten ausgeschlossen, deren "
+"Verweiser in der Liste der nicht zugelassenen Kommentarschlüssel aufgeführt "
+"sind."
+
+#: inc/class-psstats-settings.php:263
+msgid "Yes"
+msgstr "Ja"
+
+#: inc/class-psstats-settings.php:264
+#, fuzzy
+msgid ""
+"Enabling this option excludes any views of logged-in users from tracking."
+msgstr ""
+"Wenn du diese Option aktivierst, werden alle Ansichten von eingeloggten "
+"Nutzern vom Tracking ausgeschlossen."
+
+#. Plugin Name of the plugin/theme
+#: inc/class-psstats-settings.php:342 inc/class-psstats-settings.php:343
+#, fuzzy
+msgid "PS-Stats"
+msgstr "PS-Stats"
+
+#: inc/class-psstats-settings.php:359
+#, fuzzy
+msgid "PSStats Settings"
+msgstr "PSStats Einstellungen"
+
+#: inc/class-psstats-settings.php:368
+#, fuzzy
+msgid "https://wordpress.org/plugins/psstats/"
+msgstr "https://wordpress.org/plugins/psstats/"
+
+#: inc/class-psstats-settings.php:368 views/widget-back.php:49
+msgid "Documentation"
+msgstr "Dokumentation"
+
+#: inc/psstats-blacklist/inc/class-psstatsblacklist-admin.php:140
+#, fuzzy
+msgid "PS-Stats Filter"
+msgstr "PS-Stats Filter"
+
+#: inc/psstats-blacklist/inc/class-psstatsblacklist-admin.php:229
+#: inc/psstats-blacklist/views/settings-page.php:24
+#, fuzzy
+msgid "Are you sure you want to do this?"
+msgstr "Bist du sicher, dass du das tun willst?"
+
+#: inc/psstats-blacklist/views/settings-page.php:152
+#, fuzzy
+msgid "Some URLs are invalid and have been sanitized."
+msgstr "Einige URLs sind ungültig und wurden bereinigt."
+
+#: inc/psstats-blacklist/views/settings-page.php:155
+#, fuzzy
+msgid "Some regular expressions are invalid:"
+msgstr "Einige reguläre Ausdrücke sind ungültig:"
+
+#. translators: List of invalid IP addresses (comma separated).
+#: inc/psstats-blacklist/views/settings-page.php:159
+#, fuzzy, php-format
+msgid "Some IPs are invalid: %s"
+msgstr "Einige IPs sind ungültig: %s"
+
+#: inc/psstats-blacklist/views/settings-page.php:162
+#, fuzzy
+msgid "Settings updated successfully."
+msgstr "Die Einstellungen wurden erfolgreich aktualisiert."
+
+#: inc/psstats-blacklist/views/settings-page.php:176
+#, fuzzy
+msgid "PSStats Filter"
+msgstr "PSStats Filter"
+
+#: inc/psstats-blacklist/views/settings-page.php:180
+#, fuzzy
+msgid "PSStats plugin is not active."
+msgstr "Das PSStats-Plugin ist nicht aktiv."
+
+#: inc/psstats-blacklist/views/settings-page.php:189
+#, fuzzy
+msgid "Settings have not been saved yet."
+msgstr "Die Einstellungen wurden noch nicht gespeichert."
+
+#: inc/psstats-blacklist/views/settings-page.php:200
+#: inc/psstats-blacklist/views/settings-page.php:262
+#, fuzzy
+msgid "Referer filter"
+msgstr "Referer-Filter"
+
+#: inc/psstats-blacklist/views/settings-page.php:207
+#: inc/psstats-blacklist/views/settings-page.php:287
+#: inc/psstats-blacklist/views/settings-page.php:369
+#: inc/psstats-blacklist/views/settings-page.php:411
+#, fuzzy
+msgid "Activate live filter"
+msgstr "Aktiviere den Live-Filter"
+
+#: inc/psstats-blacklist/views/settings-page.php:215
+#: inc/psstats-blacklist/views/settings-page.php:295
+#: inc/psstats-blacklist/views/settings-page.php:376
+#: inc/psstats-blacklist/views/settings-page.php:418
+#, fuzzy
+msgid "Filter at time of tracking, before anything is stored"
+msgstr "Filter zum Zeitpunkt des Trackings, bevor etwas gespeichert wird"
+
+#: inc/psstats-blacklist/views/settings-page.php:222
+#: inc/psstats-blacklist/views/settings-page.php:302
+#, fuzzy
+msgid "CronJob execution"
+msgstr "CronJob-Ausführung"
+
+#: inc/psstats-blacklist/views/settings-page.php:228
+#, fuzzy
+msgid "Periodically clean up database in background"
+msgstr "Regelmäßige Bereinigung der Datenbank im Hintergrund"
+
+#: inc/psstats-blacklist/views/settings-page.php:233
+#: inc/psstats-blacklist/views/settings-page.php:316
+#: inc/psstats-blacklist/views/settings-page.php:426
+#, fuzzy
+msgid "Matching method"
+msgstr "Matching-Methode"
+
+#: inc/psstats-blacklist/views/settings-page.php:238
+#: inc/psstats-blacklist/views/settings-page.php:252
+msgid "Domain"
+msgstr "Domäne"
+
+#: inc/psstats-blacklist/views/settings-page.php:241
+#: inc/psstats-blacklist/views/settings-page.php:254
+#: inc/psstats-blacklist/views/settings-page.php:434
+#: inc/psstats-blacklist/views/settings-page.php:447
+msgid "Keyword"
+msgstr "Keyword"
+
+#: inc/psstats-blacklist/views/settings-page.php:244
+#: inc/psstats-blacklist/views/settings-page.php:325
+#: inc/psstats-blacklist/views/settings-page.php:437
+#, fuzzy
+msgid "RegEx case-sensitive"
+msgstr "RegEx Groß- und Kleinschreibung beachten"
+
+#: inc/psstats-blacklist/views/settings-page.php:247
+#: inc/psstats-blacklist/views/settings-page.php:328
+#: inc/psstats-blacklist/views/settings-page.php:440
+#, fuzzy
+msgid "RegEx case-insensitive"
+msgstr "RegEx unterscheidet nicht zwischen Groß- und Kleinschreibung"
+
+#: inc/psstats-blacklist/views/settings-page.php:252
+#, fuzzy
+msgid "Match given domain including subdomains"
+msgstr "Entspricht einer bestimmten Domain einschließlich Subdomains"
+
+#: inc/psstats-blacklist/views/settings-page.php:254
+#: inc/psstats-blacklist/views/settings-page.php:447
+#, fuzzy
+msgid "Match every referer that contains one of the keywords"
+msgstr "Finde jeden Referer, der eines der Schlüsselwörter enthält"
+
+#: inc/psstats-blacklist/views/settings-page.php:256
+#: inc/psstats-blacklist/views/settings-page.php:335
+#: inc/psstats-blacklist/views/settings-page.php:449
+#, fuzzy
+msgid "RegEx"
+msgstr "RegEx"
+
+#: inc/psstats-blacklist/views/settings-page.php:256
+#, fuzzy
+msgid "Match referer by regular expression"
+msgstr "Referer mit regulärem Ausdruck abgleichen"
+
+#: inc/psstats-blacklist/views/settings-page.php:273
+#, fuzzy
+msgid "Add one domain (without subdomains) each line, e.g. example.com"
+msgstr "Füge pro Zeile eine Domain (ohne Subdomains) hinzu, z.B. example.com"
+
+#: inc/psstats-blacklist/views/settings-page.php:280
+#: inc/psstats-blacklist/views/settings-page.php:342
+#, fuzzy
+msgid "Target filter"
+msgstr "Zielfilter"
+
+#: inc/psstats-blacklist/views/settings-page.php:309
+#, fuzzy
+msgid "Clean database periodically in background"
+msgstr "Datenbank regelmäßig im Hintergrund bereinigen"
+
+#: inc/psstats-blacklist/views/settings-page.php:322
+#: inc/psstats-blacklist/views/settings-page.php:333
+#: inc/psstats-blacklist/views/settings-page.php:431
+#: inc/psstats-blacklist/views/settings-page.php:445
+#, fuzzy
+msgid "Exact"
+msgstr "Genau"
+
+#: inc/psstats-blacklist/views/settings-page.php:333
+#, fuzzy
+msgid "Match only given targets"
+msgstr "Nur vorgegebene Ziele treffen"
+
+#: inc/psstats-blacklist/views/settings-page.php:335
+#, fuzzy
+msgid "Match target by regular expression"
+msgstr "Ziel mit regulärem Ausdruck abgleichen"
+
+#: inc/psstats-blacklist/views/settings-page.php:355
+#, fuzzy
+msgid "Add one target URL each line, e.g."
+msgstr "Füge eine Ziel-URL pro Zeile hinzu, z.B."
+
+#: inc/psstats-blacklist/views/settings-page.php:362
+#: inc/psstats-blacklist/views/settings-page.php:384
+#, fuzzy
+msgid "IP filter"
+msgstr "IP-Filter"
+
+#: inc/psstats-blacklist/views/settings-page.php:378
+#, fuzzy
+msgid ""
+"Cron execution is not possible for IP filter, because IP addresses are not "
+"stored."
+msgstr ""
+"Eine Cron-Ausführung ist für IP-Filter nicht möglich, da IP-Adressen nicht "
+"gespeichert werden."
+
+#: inc/psstats-blacklist/views/settings-page.php:396
+#, fuzzy
+msgid "Add one IP address or range per line, e.g."
+msgstr "Füge eine IP-Adresse oder einen Bereich pro Zeile hinzu, z. B."
+
+#: inc/psstats-blacklist/views/settings-page.php:404
+#: inc/psstats-blacklist/views/settings-page.php:455
+#, fuzzy
+msgid "User agent filter"
+msgstr "Benutzeragent-Filter"
+
+#: inc/psstats-blacklist/views/settings-page.php:420
+#, fuzzy
+msgid ""
+"Cron execution is not possible for user agent filter, because the user agent "
+"is stored."
+msgstr ""
+"Die Cron-Ausführung ist beim User-Agent-Filter nicht möglich, da der User-"
+"Agent gespeichert wird."
+
+#: inc/psstats-blacklist/views/settings-page.php:445
+#, fuzzy
+msgid "Match only given user agents"
+msgstr "Nur bestimmte User Agents abgleichen"
+
+#: inc/psstats-blacklist/views/settings-page.php:449
+#, fuzzy
+msgid "Match user agent by regular expression"
+msgstr "Benutzeragent mit regulärem Ausdruck abgleichen"
+
+#: inc/psstats-blacklist/views/settings-page.php:467
+#, fuzzy
+msgid "Add one user agent string per line, e.g."
+msgstr "Füge einen User Agent String pro Zeile hinzu, z. B."
+
+#: inc/psstats-blacklist/views/settings-page.php:476
+msgid "Save Changes"
+msgstr "Änderungen speichern"
+
+#: inc/psstats-blacklist/views/settings-page.php:479
+#, fuzzy
+msgid "CleanUp Database"
+msgstr "CleanUp Datenbank"
+
+#: inc/psstats-blacklist/views/settings-page.php:483
+#, fuzzy
+msgid ""
+"Applies referer and target filter (even if disabled) to data stored in "
+"database."
+msgstr ""
+"Wendet Referer- und Zielfilter (auch wenn sie deaktiviert sind) auf die in "
+"der Datenbank gespeicherten Daten an."
+
+#: inc/psstats-blacklist/views/settings-page.php:484
+#, fuzzy
+msgid "This cannot be undone!"
+msgstr "Das kann nicht rückgängig gemacht werden!"
+
+#: inc/psstats-widget/PSStats_Posts.class.php:74
+#, fuzzy
+msgid "Frontpage"
+msgstr "Titelseite"
+
+#: inc/psstats-widget/PSStats_Posts.class.php:176
+#: inc/psstats-widget/PSStats_Posts.class.php:196
+msgid "views"
+msgstr "Aufrufe"
+
+#: inc/psstats-widget/psstats-widget.php:21
+#, fuzzy
+msgid "Shows the most popular content. Based on PS-Stats Plugin."
+msgstr "Zeigt die beliebtesten Inhalte an. Basiert auf dem PS-Stats Plugin."
+
+#: inc/psstats-widget/psstats-widget.php:24
+#, fuzzy
+msgid "PS-Stats Widget"
+msgstr "PS-Stats Widget"
+
+#: inc/psstats-widget/psstats-widget.php:43
+#, fuzzy
+msgid "%VIEWS% views"
+msgstr "%VIEWS% Ansichten"
+
+#: inc/psstats-widget/psstats-widget.php:55
+#, fuzzy
+msgid "Widget title:"
+msgstr "Widget-Titel:"
+
+#: inc/psstats-widget/psstats-widget.php:60
+#, fuzzy
+msgid "Post type:"
+msgstr "Beitragstyp:"
+
+#: inc/psstats-widget/psstats-widget.php:62
+#, fuzzy
+msgid "posts + pages"
+msgstr "beiträge + Seiten"
+
+#: inc/psstats-widget/psstats-widget.php:72
+#, fuzzy
+msgid "Post category:"
+msgstr "Beitragskategorie:"
+
+#: inc/psstats-widget/psstats-widget.php:84
+#, fuzzy
+msgid "Last "
+msgstr "Letzte"
+
+#: inc/psstats-widget/psstats-widget.php:86
+#, fuzzy
+msgid " days. (If enough stats exists)"
+msgstr " tage. (Wenn genug Statistiken vorhanden sind)"
+
+#: inc/psstats-widget/psstats-widget.php:87
+#, fuzzy
+msgid "0 days = show all items"
+msgstr "0 Tage = alle Artikel anzeigen"
+
+#: inc/psstats-widget/psstats-widget.php:90
+#, fuzzy
+msgid "Amounts:"
+msgstr "Beträge:"
+
+#: inc/psstats-widget/psstats-widget.php:97
+#, fuzzy
+msgid "Show view counter?"
+msgstr "Ansichtszähler anzeigen?"
+
+#: inc/psstats-widget/psstats-widget.php:100
+#, fuzzy
+msgid "Custom text:"
+msgstr "Benutzerdefinierter Text:"
+
+#: inc/psstats-widget/psstats-widget.php:103
+#, fuzzy
+msgid "%VIEWS% = amount of views"
+msgstr "%VIEWS% = Anzahl der Ansichten"
+
+#: inc/psstats-widget/psstats-widget.php:133
+#, fuzzy
+msgid "There are no posts yet."
+msgstr "Es sind noch keine Beiträge vorhanden."
+
+#: inc/psstats-widget/psstats-widget.php:173
+#, fuzzy
+msgid "%VIEWS%"
+msgstr "%VIEWS%"
+
+#: inc/psstats-widget/psstats-widget.php:198
+#, fuzzy
+msgid ""
+"Please install <a target=\"_blank\" href=\"http://wordpress.org/plugins/"
+"psstats/\">PSStats</a> plugin first."
+msgstr ""
+"Bitte installiere zuerst das <a target=\"_blank\" href=\"http://wordpress."
+"org/plugins/psstats/\">PSStats-Plugin</a>."
+
+#: inc/extended-evaluation-for-psstats/extended-evaluation-for-psstats.php:30
+#: inc/extended-evaluation-for-psstats/extended-evaluation-for-psstats.php:69
+#, fuzzy
+msgid ""
+"PS-Stats – Extended Evaluation requires the plugin PS-Stats which has to be "
+"installed and activated! Please install and activate PS-Stats before "
+"activating this plugin!"
+msgstr ""
+"PS-Stats - Erweiterte Auswertung benötigt das Plugin PS-Stats, das "
+"installiert und aktiviert sein muss! Bitte installiere und aktiviere CP-"
+"Stats, bevor du dieses Plugin aktivierst!"
+
+#: inc/extended-evaluation-for-psstats/extended-evaluation-for-psstats.php:35
+#, fuzzy
+msgid "Activation Error: PS-Stats – Extended Evaluation requires PS-Stats!"
+msgstr ""
+"Aktivierungsfehler: PS-Stats - Erweiterte Auswertung erfordert PS-Stats!"
+
+#: inc/extended-evaluation-for-psstats/extended-evaluation-for-psstats.php:126
+msgid "View"
+msgstr "Anzeigen"
+
+#: inc/extended-evaluation-for-psstats/extended-evaluation-for-psstats.php:127
+#: inc/extended-evaluation-for-psstats/views/content.php:126
+#: inc/extended-evaluation-for-psstats/views/content.php:198
+#: inc/extended-evaluation-for-psstats/views/referrers.php:107
+msgid "Views"
+msgstr "Anzeigen"
+
+#: inc/extended-evaluation-for-psstats/extended-evaluation-for-psstats.php:176
+#: inc/extended-evaluation-for-psstats/views/content.php:43
+#, fuzzy
+msgid "PS-Stats – Extended Evaluation"
+msgstr "PS-Stats - Erweiterte Auswertung"
+
+#: inc/extended-evaluation-for-psstats/extended-evaluation-for-psstats.php:186
+#: inc/extended-evaluation-for-psstats/extended-evaluation-for-psstats.php:188
+#: inc/extended-evaluation-for-psstats/views/content.php:44
+msgid "Content"
+msgstr "Inhalt"
+
+#: inc/extended-evaluation-for-psstats/extended-evaluation-for-psstats.php:187
+#: inc/extended-evaluation-for-psstats/extended-evaluation-for-psstats.php:196
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:41
+#: inc/extended-evaluation-for-psstats/views/referrers.php:49
+#, fuzzy
+msgid "PSStats – Extended Evaluation"
+msgstr "PSStats - Erweiterte Auswertung"
+
+#: inc/extended-evaluation-for-psstats/extended-evaluation-for-psstats.php:195
+#: inc/extended-evaluation-for-psstats/extended-evaluation-for-psstats.php:197
+#: inc/extended-evaluation-for-psstats/views/referrers.php:43
+#, fuzzy
+msgid "Referrers"
+msgstr "Referrers"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:20
+msgid "Export"
+msgstr "Exportieren"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:48
+#, fuzzy
+msgid ""
+"Restrict date period: Please enter start and end date in the YYYY-MM-DD "
+"format"
+msgstr ""
+"Datumszeitraum einschränken: Bitte gib das Start- und Enddatum im Format "
+"JJJJ-MM-TT ein"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:49
+#, fuzzy
+msgid "Date range"
+msgstr "Datumsbereich"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:51
+#, fuzzy
+msgid "default (all the time)"
+msgstr "standard (die ganze Zeit)"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:52
+#, fuzzy
+msgid "last year"
+msgstr "letztes Jahr"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:53
+#, fuzzy
+msgid "last week"
+msgstr "letzte Woche"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:54
+#, fuzzy
+msgid "yesterday"
+msgstr "gestern"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:55
+#: views/widget-front.php:97
+#, fuzzy
+msgid "today"
+msgstr "heute"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:56
+#, fuzzy
+msgid "this week"
+msgstr "diese Woche"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:57
+#, fuzzy
+msgid "last 28 days"
+msgstr "letzte 28 Tage"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:58
+#, fuzzy
+msgid "last month"
+msgstr "letzter Monat"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:59
+#, fuzzy
+msgid "this month"
+msgstr "diesen Monat"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:60
+#, fuzzy
+msgid "this year"
+msgstr "dieses Jahr"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:61
+#, fuzzy
+msgid "1st quarter"
+msgstr "1. Quartal"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:62
+#, fuzzy
+msgid "2nd quarter"
+msgstr "2. Quartal"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:63
+#, fuzzy
+msgid "3rd quarter"
+msgstr "3. Quartal"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:64
+#, fuzzy
+msgid "4th quarter"
+msgstr "4. Quartal"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:65
+#, fuzzy
+msgid "custom"
+msgstr "benutzerdefinierte"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:67
+msgid "Start date"
+msgstr "Startdatum"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:70
+msgid "End date"
+msgstr "Enddatum"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:73
+#, fuzzy
+msgid "Select date period"
+msgstr "Datumszeitraum auswählen"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:86
+#: inc/extended-evaluation-for-psstats/views/content.php:123
+#, fuzzy
+msgid "Post/Page"
+msgstr "Beitrag/Seite"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:140
+msgid "from"
+msgstr "von"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:141
+msgid "to"
+msgstr "nach"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:231
+#, fuzzy
+msgid "all posts"
+msgstr "alle Posten"
+
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:234
+#, fuzzy
+msgid "Home Page"
+msgstr "Home Page"
+
+#. translators: 1: post type 2: post title or URL.
+#: inc/extended-evaluation-for-psstats/inc/formatting.php:271
+#, fuzzy, php-format
+msgid "for %1$s %2$s"
+msgstr "für %1$s %2$s"
+
+#: inc/extended-evaluation-for-psstats/views/content.php:37
+#: inc/extended-evaluation-for-psstats/views/referrers.php:34
+#, fuzzy
+msgid ""
+"No valid date period set. Please enter a valid start and a valid end date!"
+msgstr ""
+"Kein gültiger Datumszeitraum festgelegt. Bitte gib ein gültiges Start- und "
+"ein gültiges Enddatum ein!"
+
+#: inc/extended-evaluation-for-psstats/views/content.php:50
+#, fuzzy
+msgid "Popular Content and Post Types"
+msgstr "Beliebte Inhalte und Beitragstypen"
+
+#: inc/extended-evaluation-for-psstats/views/content.php:53
+#: inc/extended-evaluation-for-psstats/views/content.php:71
+#: inc/extended-evaluation-for-psstats/views/content.php:91
+#: inc/extended-evaluation-for-psstats/views/content.php:114
+#, fuzzy
+msgid "Most Popular Content"
+msgstr "Beliebteste Inhalte"
+
+#: inc/extended-evaluation-for-psstats/views/content.php:80
+#: inc/extended-evaluation-for-psstats/views/content.php:184
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:68
+#: inc/extended-evaluation-for-psstats/views/referrers.php:66
+#: views/widget-front.php:20
+#, fuzzy
+msgid "No data available."
+msgstr "Keine Daten verfügbar."
+
+#: inc/extended-evaluation-for-psstats/views/content.php:124
+#: inc/extended-evaluation-for-psstats/views/content.php:197
+msgid "URL"
+msgstr "URL"
+
+#: inc/extended-evaluation-for-psstats/views/content.php:125
+msgid "Post Type"
+msgstr "Beitragstyp"
+
+#: inc/extended-evaluation-for-psstats/views/content.php:127
+#: inc/extended-evaluation-for-psstats/views/referrers.php:108
+#, fuzzy
+msgid "Proportion"
+msgstr "Anteil"
+
+#: inc/extended-evaluation-for-psstats/views/content.php:151
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:120
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:212
+#: inc/extended-evaluation-for-psstats/views/referrers.php:128
+#, fuzzy
+msgid "Sum"
+msgstr "Summe"
+
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:43
+#, fuzzy
+msgid "Overview and Years"
+msgstr "Überblick und Jahre"
+
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:45
+msgid "Overview"
+msgstr "Überblick"
+
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:54
+#: inc/extended-evaluation-for-psstats/views/referrers.php:60
+#, fuzzy
+msgid ""
+"Per default the views of all posts are shown. To restrict the evaluation to "
+"one post/page, enter their path or name."
+msgstr ""
+"Standardmäßig werden die Ansichten aller Beiträge angezeigt. Um die "
+"Auswertung auf einen Beitrag/eine Seite zu beschränken, gib ihren Pfad oder "
+"Namen ein."
+
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:56
+#: inc/extended-evaluation-for-psstats/views/referrers.php:62
+#, fuzzy
+msgid "Select post/page"
+msgstr "Beitrag/Seite auswählen"
+
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:63
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:74
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:153
+#, fuzzy
+msgid "Monthly Views"
+msgstr "Monatliche Ansichten"
+
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:79
+#, fuzzy
+msgid "Yearly Views"
+msgstr "Jährliche Ansichten"
+
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:107
+#, fuzzy
+msgid "Monthly / Yearly Views"
+msgstr "Monatliche / Jährliche Ansichten"
+
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:116
+msgid "Year"
+msgstr "Jahr"
+
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:140
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:148
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:187
+#, fuzzy
+msgid "Daily Views"
+msgstr "Tägliche Ansichten"
+
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:218
+msgid "Average"
+msgstr "Durchschnittlich"
+
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:224
+msgid "Minimum"
+msgstr "Minimum"
+
+#: inc/extended-evaluation-for-psstats/views/dashboard.php:234
+msgid "Maximum"
+msgstr "Maximum"
+
+#: inc/extended-evaluation-for-psstats/views/referrers.php:50
+#: inc/extended-evaluation-for-psstats/views/referrers.php:77
+#: inc/extended-evaluation-for-psstats/views/referrers.php:96
+#, fuzzy
+msgid "Referrers from other websites"
+msgstr "Referrer von anderen Websites"
+
+#: inc/extended-evaluation-for-psstats/views/referrers.php:106
+#, fuzzy
+msgid "Referring Domain"
+msgstr "Verweisende Domain"
+
+#: psource/psource-plugin-update/Puc/v5p0/Plugin/Ui.php:56
+msgid "View details"
+msgstr "Mehr Infos"
+
+#: psource/psource-plugin-update/Puc/v5p0/Plugin/Ui.php:79
+#, fuzzy, php-format
+msgid "Weitere Informationen zu %s"
+msgstr "Weitere Informationen zu %s"
+
+#: psource/psource-plugin-update/Puc/v5p0/Plugin/Ui.php:130
+#, fuzzy
+msgid "Auf neuere Version prüfen"
+msgstr "Auf neuere Version prüfen"
+
+#: psource/psource-plugin-update/Puc/v5p0/Plugin/Ui.php:217
+#, fuzzy, php-format
+msgctxt "the plugin title"
+msgid "Keine neuere Version von %s im PSOURCE REPO gefunden."
+msgstr "Keine neuere Version von %s im PSOURCE REPO gefunden."
+
+#: psource/psource-plugin-update/Puc/v5p0/Plugin/Ui.php:219
+#, fuzzy, php-format
+msgctxt "the plugin title"
+msgid "Im PSOURCE REPO ist eine <b>neuere Version von %s</b> verfügbar!."
+msgstr "Im PSOURCE REPO ist eine <b>neuere Version von %s</b> verfügbar!"
+
+#: psource/psource-plugin-update/Puc/v5p0/Plugin/Ui.php:221
+#, fuzzy, php-format
+msgctxt "the plugin title"
+msgid ""
+"Entschuldige, es konnte nicht festgestellt werden, ob Updates für %s "
+"verfügbar sind."
+msgstr ""
+"Entschuldige, es konnte nicht festgestellt werden, ob Updates für %s "
+"verfügbar sind."
+
+#: psource/psource-plugin-update/Puc/v5p0/Plugin/Ui.php:227
+#, fuzzy, php-format
+msgid "Unbekannter PSOURCE-UPDATTER-Status \"%s\""
+msgstr "Unbekannter PSOURCE-UPDATTER-Status \"%s\""
+
+#: psource/psource-plugin-update/Puc/v5p0/Vcs/PluginUpdateChecker.php:98
+#, fuzzy
+msgid "There is no changelog available."
+msgstr "Es ist kein Changelog verfügbar."
+
+#: views/widget-back.php:16
+#, fuzzy
+msgid "Open full settings page"
+msgstr "Vollständige Einstellungsseite öffnen"
+
+#: views/widget-back.php:18
+#, fuzzy
+msgid "All Settings"
+msgstr "Alle Einstellungen"
+
+#: views/widget-back.php:24
+#, fuzzy
+msgid "Widget Settings"
+msgstr "Widget-Einstellungen"
+
+#: views/widget-back.php:39
+#, fuzzy
+msgid "Entries in top lists only for today"
+msgstr "Einträge in Toplisten nur für heute"
+
+#. Plugin URI of the plugin/theme
+#: views/widget-back.php:49
+#, fuzzy
+msgid "https://github.com/Power-Source/"
+msgstr "https://github.com/Power-Source/"
+
+#: views/widget-front.php:38
+#, fuzzy
+msgid "Top referers"
+msgstr "Top Referenten"
+
+#: views/widget-front.php:63
+#, fuzzy
+msgid "Top targets"
+msgstr "Top Ziele"
+
+#: views/widget-front.php:88
+msgid "Totals"
+msgstr "Summe"
+
+#: views/widget-front.php:105
+#, fuzzy
+msgid "since"
+msgstr "seit"
+
+#: views/widget-front.php:116
+msgid "Refresh"
+msgstr "Auffrischen"
+
+#. Description of the plugin/theme
+#, fuzzy
+msgid ""
+"Kompaktes, benutzerfreundliches und datenschutzkonformes Statistik-Plugin "
+"für WordPress."
+msgstr ""
+"Kompaktes, benutzerfreundliches und datenschutzkonformes Statistik-Plugin "
+"für WordPress."
+
+#. Author of the plugin/theme
+#, fuzzy
+msgid "DerN3rd"
+msgstr "DerN3rd"
+
+#. Author URI of the plugin/theme
+#, fuzzy
+msgid "https://github.com/Power-Source"
+msgstr "https://github.com/Power-Source"
