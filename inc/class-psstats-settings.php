@@ -365,8 +365,8 @@ class PSStats_Settings {
 				submit_button();
 				?>
 				<p class="alignright">
-				<a href="<?php echo esc_url( __( 'https://github.com/cp-psource/ps-stats/wiki', 'psstats' ) ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Dokumentation', 'psstats' ); ?></a>
-				&bull; <a href="<?php echo esc_url( __( 'https://github.com/cp-psource/ps-stats/discussions', 'psstats' ) ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Support', 'psstats' ); ?></a>
+				<a href="<?php echo esc_url( __( 'https://github.com/Power-Source/ps-stats/wiki', 'psstats' ) ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Dokumentation', 'psstats' ); ?></a>
+				&bull; <a href="<?php echo esc_url( __( 'https://github.com/Power-Source/ps-stats/discussions', 'psstats' ) ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Support', 'psstats' ); ?></a>
 				</p>
 
 			</form>

@@ -156,7 +156,7 @@ function eefpsstats_get_views_for_all_months( $post_url = '' ) {
 		// Only for selected posts.
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
-                // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnsupportedPlaceholder
+                // phpcs:ignore ClassicPress.DB.PreparedSQLPlaceholders.UnsupportedPlaceholder
 				"SELECT DATE_FORMAT(`created`, '%Y-%m') as `date`, COUNT(`created`) as `count`
                 FROM `$wpdb->psstats`
                 WHERE `target` = %s

@@ -39,8 +39,8 @@ class PSStats_Backend {
 		return array_merge(
 			$input,
 			array(
-				'<a href="https://github.com/cp-psource/ps-stats/wiki" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Dokumentation', 'psstats' ) . '</a>',
-				'<a href="' . esc_url( __( 'https://github.com/cp-psource/ps-stats/discussions', 'psstats' ) ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Support', 'psstats' ) . '</a>',
+				'<a href="https://github.com/Power-Source/ps-stats/wiki" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Dokumentation', 'psstats' ) . '</a>',
+				'<a href="' . esc_url( __( 'https://github.com/Power-Source/ps-stats/discussions', 'psstats' ) ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Support', 'psstats' ) . '</a>',
 			)
 		);
 	}

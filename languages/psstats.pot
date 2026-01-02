@@ -176,17 +176,17 @@ msgstr ""
 msgid "Documentation"
 msgstr ""
 
-#. translators: minimum version numbers for WordPress and PHP inserted at placeholders
+#. translators: minimum version numbers for ClassicPress and PHP inserted at placeholders
 #: inc/psstats-blacklist/psstats-blacklist.php:102
 #, php-format
-msgid "PSStats Filter requires at least WordPress %1$s and PHP %2$s."
+msgid "PSStats Filter requires at least ClassicPress %1$s and PHP %2$s."
 msgstr ""
 
-#. translators: current version numbers for WordPress and PHP inserted at placeholders
+#. translators: current version numbers for ClassicPress and PHP inserted at placeholders
 #: inc/psstats-blacklist/psstats-blacklist.php:109
 #, php-format
 msgid ""
-"Your site is running WordPress %1$s on PHP %2$s, thus the plugin has been "
+"Your site is running ClassicPress %1$s on PHP %2$s, thus the plugin has been "
 "disabled."
 msgstr ""
 
@@ -831,7 +831,7 @@ msgstr ""
 
 #. Description of the plugin/theme
 msgid ""
-"Compact, easy-to-use and privacy-compliant stats plugin for WordPress."
+"Compact, easy-to-use and privacy-compliant stats plugin for ClassicPress."
 msgstr ""
 
 #. Author of the plugin/theme

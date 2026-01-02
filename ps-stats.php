@@ -1,16 +1,16 @@
 <?php
 /**
  * Plugin Name: PS Stats
- * Description: Kompaktes, benutzerfreundliches und datenschutzkonformes Statistik-Plugin für WordPress.
+ * Description: Kompaktes, benutzerfreundliches und datenschutzkonformes Statistik-Plugin für ClassicPress.
  * Text Domain: psstats
  * Author:      DerN3rd
  * Author URI:  https://github.com/Power-Source
- * Plugin URI:  https://cp-psource.github.io/ps-stats/
+ * Plugin URI:  https://power-source.github.io/ps-stats/
  * License:     GPLv3 or later
  * Version:     1.0.0
  * Domain Path: languages
  *
- * @package WordPress
+ * @package ClassicPress
  */
 
 // PS Update Manager - Hinweis wenn nicht installiert

@@ -168,7 +168,7 @@ function eefpsstats_enqueue_script( $script_name, $script_path, $dependencies = 
 }
 
 /**
- * Create an item and submenu items in the WordPress admin menu.
+ * Create an item and submenu items in the ClassicPress admin menu.
  */
 function eefpsstats_add_menu() {
 	$page_hook_suffixes   = [];

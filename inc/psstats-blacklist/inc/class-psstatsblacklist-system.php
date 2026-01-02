@@ -90,7 +90,7 @@ class PSStatsBlacklist_System extends PSStatsBlacklist {
 			if ( function_exists( 'get_sites' ) ) {
 				$sites = get_sites();
 			} elseif ( function_exists( 'wp_get_sites' ) ) {
-				// phpcs:ignore WordPress.WP.DeprecatedFunctions.wp_get_sitesFound -- Legacy support for WP < 4.6.
+				// phpcs:ignore ClassicPress.WP.DeprecatedFunctions.wp_get_sitesFound -- Legacy support for WP < 4.6.
 				$sites = wp_get_sites();
 			} else {
 				return;

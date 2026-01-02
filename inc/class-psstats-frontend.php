@@ -311,7 +311,7 @@ class PSStats_Frontend extends PSStats {
 		$disallowed_keys = get_option( 'disallowed_keys' );
 
 		if ( false === $disallowed_keys ) {
-			// WordPress < 5.5 uses the old key.
+			// ClassicPress < 5.5 uses the old key.
 			$disallowed_keys = get_option( 'blacklist_keys' );
 		}
 

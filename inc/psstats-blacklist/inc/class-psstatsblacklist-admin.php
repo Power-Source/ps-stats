@@ -221,7 +221,7 @@ class PSStatsBlacklist_Admin extends PSStatsBlacklist {
 	 *
 	 * @since 1.1.0
 	 *
-	 * @global wpdb $wpdb WordPress database.
+	 * @global wpdb $wpdb ClassicPress database.
 	 */
 	public static function cleanup_database() {
 		// Check user permissions.
@@ -264,7 +264,7 @@ class PSStatsBlacklist_Admin extends PSStatsBlacklist {
 			global $wpdb;
 
 			// Execute filter on database.
-			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- These statements produce warnings, rework in future release (TODO).
+			// phpcs:disable ClassicPress.DB.PreparedSQL.NotPrepared -- These statements produce warnings, rework in future release (TODO).
 			if ( ! empty( $referer_regexp ) ) {
 				$wpdb->query(
 					$wpdb->prepare(
@@ -285,7 +285,7 @@ class PSStatsBlacklist_Admin extends PSStatsBlacklist {
 					)
 				);
 			}
-			// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
+			// phpcs:enable ClassicPress.DB.PreparedSQL.NotPrepared
 
 			// Optimize DB.
 			$wpdb->query( "OPTIMIZE TABLE `$wpdb->psstats`" );
@@ -364,7 +364,7 @@ class PSStatsBlacklist_Admin extends PSStatsBlacklist {
 			function ( $re ) {
 				// Check of preg_match() fails (warnings suppressed).
 
-				// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+				// phpcs:ignore ClassicPress.PHP.NoSilencedErrors.Discouraged
 				return false === @preg_match( PSStatsBlacklist::regex( $re, false ), null );
 			}
 		);

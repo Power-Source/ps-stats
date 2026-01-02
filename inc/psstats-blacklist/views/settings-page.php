@@ -9,7 +9,7 @@
  * @since      1.0.0
  */
 
-// phpcs:disable WordPress.WhiteSpace.PrecisionAlignment.Found
+// phpcs:disable ClassicPress.WhiteSpace.PrecisionAlignment.Found
 
 // Quit.
 defined( 'ABSPATH' ) || exit;

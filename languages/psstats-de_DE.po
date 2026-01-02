@@ -864,10 +864,10 @@ msgstr "Aktualisieren"
 #, fuzzy
 msgid ""
 "Kompaktes, benutzerfreundliches und datenschutzkonformes Statistik-Plugin "
-"für WordPress."
+"für ClassicPress."
 msgstr ""
 "Kompaktes, benutzerfreundliches und datenschutzkonformes Statistik-Plugin "
-"für WordPress."
+"für ClassicPress."
 
 #. Author of the plugin/theme
 #, fuzzy

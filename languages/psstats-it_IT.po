@@ -954,8 +954,8 @@ msgstr "Aggiorna"
 #, fuzzy
 msgid ""
 "Kompaktes, benutzerfreundliches und datenschutzkonformes Statistik-Plugin "
-"für WordPress."
-msgstr "Un plug-in statistico per WordPress completo, semplice e sicuro."
+"für ClassicPress."
+msgstr "Un plug-in statistico per ClassicPress completo, semplice e sicuro."
 
 #. Author of the plugin/theme
 #, fuzzy
