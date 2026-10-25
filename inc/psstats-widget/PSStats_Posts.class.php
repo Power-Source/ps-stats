@@ -15,32 +15,36 @@ class PSStats_Posts {
 	*/
 	public static function get_post_ids($post_type, $post_category, $amount, $days) {
 		$posts = array();
-		$counter = 0;
-		$wpurl = parse_url(get_bloginfo('url'));
 		$targets = self::get_all_targets(intVal($days));
+		$amount = max( 1, absint( $amount ) );
 
 		foreach ($targets as $entry) {
-			$clear_url = str_replace($wpurl['host'],"",$entry['url']);
+			$clear_url = $entry['url'];
+			if ( null === \PSStats\Privacy::route( $clear_url ) ) {
+				continue;
+			}
 			
 			// Add "frontpage" view counter, if post_type page/postpage and blog view is frontpage
-			if ($clear_url == '/' && ($post_type == 'page' || $post_type == 'postpage') && 'page' != get_option('show_on_front')) {
+			if ($clear_url === \PSStats\Normalizer::target_path( home_url( '/' ) ) && ($post_type == 'page' || $post_type == 'postpage') && 'page' != get_option('show_on_front')) {
 				if (!isset($posts[0])) $posts[0] = 0;
 				$posts[0] += $entry['count'];
+				if ( count( $posts ) >= $amount ) break;
 				continue;
 			}
 			
 			// Try to get ID from PSStats Count URL
-			$id = url_to_postid(home_url( $clear_url ));
+			$id = url_to_postid( \PSStats\Normalizer::local_url( $clear_url ) );
 			
 			// Get page by ID
 			$page = get_page($id);
 			
 			// Find statistics for published "post&page" entries
-			if ( (isset($page->post_type) && ($page->post_type == $post_type || $post_type == 'postpage')) && (isset($page->post_status) && $page->post_status == 'publish') ) {
+			if ( (isset($page->post_type) && ($page->post_type == $post_type || ( $post_type == 'postpage' && in_array( $page->post_type, array( 'post', 'page' ), true ) ))) && (isset($page->post_status) && $page->post_status == 'publish') ) {
                 
 				if (!empty($page->ID)) {
 					// When category is select, then ignore other posts!
 					if ($post_type == 'post' && $post_category > 0) {
+						$termIDArray = array();
 						$categories = get_the_category($page->ID);
 						foreach($categories as $category) $termIDArray[] = $category->term_id;
 						if (!in_array($post_category,$termIDArray)) continue;
@@ -67,13 +71,14 @@ class PSStats_Posts {
 		$wp_posts = array();
 		
 		foreach ($posts as $post_id=>$views) {
-			$wp_posts[] = new PSStats_Post(get_page($post_id), $views);
+			$item = new PSStats_Post( $post_id ? get_post( $post_id ) : new WP_Post( (object) array( 'ID' => 0 ) ), $views );
 			
 			// Manipulate Frontpage Post (ID==0) to fix values
 			if ($post_id == 0) {
-				$wp_posts[$post_id]->post_title = __('Frontpage', 'psstats');
-				$wp_posts[$post_id]->post_permalink = get_home_url();
+				$item->post_title = __('Frontpage', 'psstats');
+				$item->post_permalink = get_home_url();
 			}
+			$wp_posts[] = $item;
 			
 		}
 		
@@ -88,7 +93,8 @@ class PSStats_Posts {
 	* @since   1.3
 	*/
 	public static function get_post_list($post_type, $post_category, $amount, $days) {
-		return new WP_Query(array('post__in' =>array_keys(self::get_post_ids($post_type, $post_category, $amount, $days))));
+		$ids = array_filter( array_keys( self::get_post_ids( $post_type, $post_category, $amount, $days ) ) );
+		return new WP_Query( array( 'post__in' => $ids ?: array( 0 ), 'post_type' => 'postpage' === $post_type ? array( 'post', 'page' ) : $post_type, 'post_status' => 'publish', 'orderby' => 'post__in', 'posts_per_page' => max( 1, absint( $amount ) ) ) );
 	}
 
 	/**
@@ -111,15 +117,19 @@ class PSStats_Posts {
 	public static function get_psstats_count($post_id, $days) {
 		if (empty($post_id)) {
 			global $post;
-			$post_id = $post->ID;
+			$post_id = $post instanceof WP_Post ? $post->ID : 0;
+			if ( ! $post_id ) return 0;
 		}
 
 		$targets = self::get_all_targets(intval($days));
-		$count = -1;
+		$count = 0;
+		if ( null === \PSStats\Privacy::route( get_permalink( $post_id ) ) ) {
+			return 0;
+		}
 
 		foreach ($targets as $entry) {
 			$clear_url = str_replace(get_bloginfo('wpurl'),"",$entry['url']);
-			$id = url_to_postid(home_url( $clear_url ));
+			$id = url_to_postid( \PSStats\Normalizer::local_url( $clear_url ) );
 
 			if ($id == $post_id) {
 				$count = $entry['count'];
@@ -139,7 +149,7 @@ class PSStats_Posts {
 	public static function psstats_count_sum($days) {
 		$wpurl = parse_url(get_bloginfo('wpurl'));
 		$targets = self::get_all_targets(intval($days));
-		$count = -1;
+		$count = 0;
 
 		foreach ($targets as $entry) {
 			$count += $entry['count'];
@@ -177,7 +187,7 @@ class PSStats_Posts {
 			'days' => 0
 		), $atts );
 
-		return $a['prefix'] . " " . self::psstats_count($post->ID, $a['days']) . " " . $a['suffix'];
+		return esc_html( $a['prefix'] ) . " " . self::psstats_count( $post instanceof WP_Post ? $post->ID : 0, $a['days'] ) . " " . esc_html( $a['suffix'] );
 	}
 
 	/**
@@ -197,7 +207,7 @@ class PSStats_Posts {
 			'days' => 0
 		), $atts );
 
-		return $a['prefix'] . " " . self::psstats_count_sum($a['days']) . " " . $a['suffix'];
+		return esc_html( $a['prefix'] ) . " " . self::psstats_count_sum($a['days']) . " " . esc_html( $a['suffix'] );
 	}
 
 	/**
@@ -208,35 +218,13 @@ class PSStats_Posts {
 
 	public static function get_all_targets($interval)
 	{
-		/* Look for cached values */
-		if ($data = get_transient('psstats_targets_'.$interval)) {
-			return $data;
-		}
-
-		if ($interval > 0) {
-			$date = date("Y-m-d", strtotime('-' . $interval . ' days'));
-		}
-
-		global $wpdb;
-
-		if ($interval > 0) {
-			$data = $wpdb->get_results(
-				"SELECT COUNT(`target`) as `count`, `target` as `url` FROM `$wpdb->psstats` WHERE `created` >= '$date' GROUP BY `target` ORDER BY `count` DESC",
-				ARRAY_A
-			);
-		} else {
-			$data = $wpdb->get_results(
-				"SELECT COUNT(`target`) as `count`, `target` as `url` FROM `$wpdb->psstats` GROUP BY `target` ORDER BY `count` DESC",
-				ARRAY_A
-			);
-		}
-
-		/* Save values for 4 minutes */
-		set_transient(
-			'psstats_targets_'.$interval, $data, 60 * 4 // = 4 minutes.
-		);
-
-		return $data;
+		$provider = \PSStats\Api\Provider::instance();
+		$bounds = $provider->date_bounds();
+		$today = current_time( 'Y-m-d' );
+		$from = (int) $interval > 0 ? gmdate( 'Y-m-d', strtotime( $today . ' -' . max( 0, (int) $interval - 1 ) . ' days' ) ) : ( $bounds['oldest'] ?: $today );
+		$to = $bounds['newest'] ?: $today;
+		$rows = $from > $to ? array() : $provider->landing_page_stats( $from, $to );
+		return array_map( static fn ( array $row ): array => array( 'url' => $row['path'], 'count' => $row['views'] ), $rows );
 	}
 
 }

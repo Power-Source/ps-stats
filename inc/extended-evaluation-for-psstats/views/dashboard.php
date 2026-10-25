@@ -37,14 +37,14 @@ if ( isset( $_GET['year'] ) && 4 === strlen( sanitize_text_field( wp_unslash( $_
 	$post_types = eefpsstats_get_post_types();
 }
 ?>
-<div class="wrap eefpsstats">
-	<h1><?php esc_html_e( 'PSStats – Extended Evaluation', 'psstats' ); ?></h1>
+<div class="eefpsstats">
+	<h2><?php esc_html_e( 'Auswertung', 'ps-stats' ); ?></h2>
 
 	<nav class="nav-tab-wrapper wp-clearfix" aria-label="<?php esc_html_e( 'Overview and Years', 'psstats' ); ?>">
-		<a href="<?php echo esc_url( admin_url( 'admin.php?page=extended_evaluation_for_psstats_dashboard&post=' . $selected_post ) ); ?>"
+		<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'ps-stats', 'post' => rawurlencode( $selected_post ) ), admin_url( 'admin.php' ) ) ); ?>"
 			class="<?php eefpsstats_echo_tab_class( 0 === $selected_year ); ?>"><?php esc_html_e( 'Overview', 'psstats' ); ?></a>
 	<?php foreach ( $years as $year ) { ?>
-		<a href="<?php echo esc_url( admin_url( 'admin.php?page=extended_evaluation_for_psstats_dashboard&year=' . $year . '&post=' . $selected_post ) ); ?>"
+		<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'ps-stats', 'year' => $year, 'post' => rawurlencode( $selected_post ) ), admin_url( 'admin.php' ) ) ); ?>"
 			class="<?php eefpsstats_echo_tab_class( $selected_year === $year ); ?>"><?php echo esc_html( $year ); ?></a>
 	<?php } ?>
 	</nav>
@@ -123,7 +123,7 @@ if ( 0 === $selected_year ) {
 			<tbody>
 				<?php foreach ( $years as $year ) { ?>
 				<tr>
-					<th scope="row"><a href="<?php echo esc_url( admin_url( 'admin.php?page=extended_evaluation_for_psstats_dashboard&year=' . $year ) ); ?>"><?php echo esc_html( $year ); ?></a></th>
+					<th scope="row"><a href="<?php echo esc_url( add_query_arg( array( 'page' => 'ps-stats', 'year' => $year, 'post' => rawurlencode( $selected_post ) ), admin_url( 'admin.php' ) ) ); ?>"><?php echo esc_html( $year ); ?></a></th>
 					<?php foreach ( $months as $month ) { ?>
 					<td class="right"><?php eefpsstats_echo_number( eefpsstats_get_monthly_views( $views_for_all_months, $year, $month ) ); ?></td>
 					<?php } ?>
@@ -200,7 +200,7 @@ if ( 0 === $selected_year ) {
 				</tr>
 			</thead>
 			<tbody>
-				<?php foreach ( $days as $day ) { ?>
+				<?php foreach ( eefpsstats_get_days() as $day ) { ?>
 				<tr>
 					<th scope="row"><?php echo esc_html( $day ); ?></th>
 					<?php foreach ( $months as $month ) { ?>

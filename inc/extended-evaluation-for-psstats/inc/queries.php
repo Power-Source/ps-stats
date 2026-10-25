@@ -8,6 +8,27 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
+function eefpsstats_check_query() {
+	global $wpdb;
+	if ( '' !== $wpdb->last_error ) {
+		do_action( 'ps_stats_database_error', 'evaluation', $wpdb->last_error );
+		wp_die( esc_html__( 'Die Statistikdaten konnten nicht geladen werden. Bitte die Datenbankverbindung prüfen.', 'ps-stats' ), 500 );
+	}
+}
+
+function eefpsstats_get_period( $start = '', $end = '' ) {
+	if ( '' === $start && '' === $end ) {
+		$bounds = \PSStats\Api\Provider::instance()->date_bounds();
+		eefpsstats_check_query();
+		$today = current_time( 'Y-m-d' );
+		return array( $bounds['oldest'] ?: $today, $bounds['newest'] ?: $today );
+	}
+	if ( ! eefpsstats_is_valid_date_string( $start ) || ! eefpsstats_is_valid_date_string( $end ) || $start > $end ) {
+		wp_die( esc_html__( 'Bitte einen gültigen Zeitraum angeben.', 'ps-stats' ), 400 );
+	}
+	return array( $start, $end );
+}
+
 /**
  * Returns the numeric values for all days in a month.
  *
@@ -47,18 +68,8 @@ function eefpsstats_get_months() {
  * @return array an array of integers (e. g. 2016, 2015)
  */
 function eefpsstats_get_years() {
-	global $wpdb;
-	$results = $wpdb->get_results(
-		"SELECT DISTINCT YEAR(`created`) as `year`
-		FROM `$wpdb->psstats`
-		ORDER BY `year` DESC",
-		ARRAY_A
-	);
-	$years   = [];
-	foreach ( $results as $result ) {
-		$years[] = (int) $result['year'];
-	}
-
+	$years = array_map( 'intval', array_keys( eefpsstats_get_views_for_all_years() ) );
+	rsort( $years );
 	return $years;
 }
 
@@ -71,36 +82,15 @@ function eefpsstats_get_years() {
  * @return array an array with date as key and views as value
  */
 function eefpsstats_get_views_for_all_days( $post_url = '' ) {
-	global $wpdb;
-	if ( '' === $post_url ) {
-		// For all posts.
-		$results = $wpdb->get_results(
-			"SELECT `created` as `date`, COUNT(`created`) as `count`
-			FROM `$wpdb->psstats`
-			GROUP BY `created`
-			ORDER BY `created`",
-			ARRAY_A
-		);
-	} else {
-		// Only for selected posts.
-		$results = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT `created` as `date`, COUNT(`created`) as `count`
-				FROM `$wpdb->psstats`
-				WHERE `target` = %s
-				GROUP BY `created`
-				ORDER BY `created`",
-				$post_url
-			),
-			ARRAY_A
-		);
+	static $cache = array();
+	$key = get_current_blog_id() . ':' . $post_url;
+	if ( ! isset( $cache[ $key ] ) ) {
+		list( $from, $to ) = eefpsstats_get_period();
+		$rows = \PSStats\Api\Provider::instance()->daily_visits( $from, $to, '' === $post_url ? array() : array( $post_url ) );
+		eefpsstats_check_query();
+		$cache[ $key ] = array_column( $rows, 'views', 'date' );
 	}
-	$views_for_all_days = [];
-	foreach ( $results as $result ) {
-		$views_for_all_days[ $result['date'] ] = $result['count'];
-	}
-
-	return $views_for_all_days;
+	return $cache[ $key ];
 }
 
 /**
@@ -142,34 +132,10 @@ function eefpsstats_get_daily_views( $views_for_all_days, $year, $month, $day ) 
  * @return array an array with month as key and views as value.
  */
 function eefpsstats_get_views_for_all_months( $post_url = '' ) {
-	global $wpdb;
-	if ( '' === $post_url ) {
-		// For all posts.
-		$results = $wpdb->get_results(
-			"SELECT DATE_FORMAT(`created`, '%Y-%m') as `date`, COUNT(`created`) as `count`
-			FROM `$wpdb->psstats`
-			GROUP BY `date`
-			ORDER BY `date`",
-			ARRAY_A
-		);
-	} else {
-		// Only for selected posts.
-		$results = $wpdb->get_results(
-			$wpdb->prepare(
-                // phpcs:ignore ClassicPress.DB.PreparedSQLPlaceholders.UnsupportedPlaceholder
-				"SELECT DATE_FORMAT(`created`, '%Y-%m') as `date`, COUNT(`created`) as `count`
-                FROM `$wpdb->psstats`
-                WHERE `target` = %s
-                GROUP BY `date`
-                ORDER BY `date`",
-				$post_url
-			),
-			ARRAY_A
-		);
-	}
 	$views_for_all_months = [];
-	foreach ( $results as $result ) {
-		$views_for_all_months[ $result['date'] ] = $result['count'];
+	foreach ( eefpsstats_get_views_for_all_days( $post_url ) as $date => $views ) {
+		$month = substr( $date, 0, 7 );
+		$views_for_all_months[ $month ] = ( $views_for_all_months[ $month ] ?? 0 ) + $views;
 	}
 
 	return $views_for_all_months;
@@ -209,7 +175,7 @@ function eefpsstats_get_monthly_views( $views_for_all_months, $year, $month ) {
 function eefpsstats_get_average_daily_views_of_month( $views_for_all_months, $year, $month ) {
 	$views_in_month = eefpsstats_get_monthly_views( $views_for_all_months, $year, $month );
 	$days_in_month  = eefpsstats_is_current_month( $year, $month )
-		? (int) gmdate( 'd' )
+		? (int) current_time( 'd' )
 		: count( eefpsstats_get_days( $month, $year ) );
 
 	return round( $views_in_month / $days_in_month );
@@ -227,7 +193,7 @@ function eefpsstats_get_average_daily_views_of_month( $views_for_all_months, $ye
  */
 function eefpsstats_get_daily_views_of_month( $views_for_all_days, $year, $month ) {
 	if ( eefpsstats_is_current_month( $year, $month ) ) {
-		$days = range( 1, (int) gmdate( 'd' ) );
+		$days = range( 1, (int) current_time( 'd' ) );
 	} else {
 		$days = eefpsstats_get_days( $month, $year );
 	}
@@ -249,8 +215,8 @@ function eefpsstats_get_daily_views_of_month( $views_for_all_days, $year, $month
  * @return bool true if and only if the given month is the current one.
  */
 function eefpsstats_is_current_month( $year, $month ) {
-	$current_year  = (int) gmdate( 'Y' );
-	$current_month = (int) gmdate( 'm' );
+	$current_year  = (int) current_time( 'Y' );
+	$current_month = (int) current_time( 'm' );
 
 	return ( $current_year === $year && $current_month === $month );
 }
@@ -265,31 +231,10 @@ function eefpsstats_is_current_month( $year, $month ) {
  * @return array an array with the year as key and views as value.
  */
 function eefpsstats_get_views_for_all_years( $post_url = '' ) {
-	global $wpdb;
-	if ( '' === $post_url ) {
-		// For all posts.
-		$results = $wpdb->get_results(
-			"SELECT YEAR(`created`) as `date`, COUNT(`created`) as `count`
-			FROM `$wpdb->psstats`
-			GROUP BY `date`",
-			ARRAY_A
-		);
-	} else {
-		// Only for selected posts.
-		$results = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT YEAR(`created`) as `date`, COUNT(`created`) as `count`
-				FROM `$wpdb->psstats`
-				WHERE `target` = %s
-				GROUP BY `date`",
-				$post_url
-			),
-			ARRAY_A
-		);
-	}
 	$views_for_all_years = [];
-	foreach ( $results as $result ) {
-		$views_for_all_years[ $result['date'] ] = $result['count'];
+	foreach ( eefpsstats_get_views_for_all_months( $post_url ) as $date => $views ) {
+		$year = substr( $date, 0, 4 );
+		$views_for_all_years[ $year ] = ( $views_for_all_years[ $year ] ?? 0 ) + $views;
 	}
 
 	return $views_for_all_years;
@@ -322,28 +267,12 @@ function eefpsstats_get_yearly_views( $views_for_all_years, $year ) {
  * @return array an array with the most popular posts, ordered by view count.
  */
 function eefpsstats_get_views_of_most_popular_posts( $start = '', $end = '' ) {
-	global $wpdb;
-	if ( '' === $start && '' === $end ) {
-		return $wpdb->get_results(
-			"SELECT COUNT(`target`) as `count`, `target` as `url`
-			FROM `$wpdb->psstats`
-			GROUP BY `target`
-			ORDER BY `count` DESC",
-			ARRAY_A
-		);
-	}
-
-	return $wpdb->get_results(
-		$wpdb->prepare(
-			"SELECT COUNT(`target`) as `count`, `target` as `url`
-            FROM `$wpdb->psstats`
-            WHERE `created` >= %s AND `created` <= %s
-            GROUP BY `target`
-            ORDER BY `count` DESC",
-			$start,
-			$end
-		),
-		ARRAY_A
+	list( $from, $to ) = eefpsstats_get_period( $start, $end );
+	$rows = \PSStats\Api\Provider::instance()->landing_page_stats( $from, $to );
+	eefpsstats_check_query();
+	return array_map(
+		static fn ( array $row ): array => array( 'url' => $row['path'], 'count' => $row['views'] ),
+		$rows
 	);
 }
 
@@ -357,32 +286,12 @@ function eefpsstats_get_views_of_most_popular_posts( $start = '', $end = '' ) {
  * @return int the number of views for the post.
  */
 function eefpsstats_get_views_of_post( $url, $start = '', $end = '' ) {
-	global $wpdb;
-	if ( '' === $start && '' === $end ) {
-		$results = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT COUNT(`target`) as `count`
-				FROM `$wpdb->psstats`
-				WHERE `target` = %s",
-				$url
-			),
-			OBJECT
-		);
-	} else {
-		$results = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT COUNT(`target`) as `count`
-				FROM `$wpdb->psstats`
-				WHERE `target` = %s AND `created` >= %s AND `created` <= %s",
-				$url,
-				$start,
-				$end
-			),
-			OBJECT
-		);
+	static $cache = array();
+	$key = get_current_blog_id() . ':' . $start . ':' . $end;
+	if ( ! isset( $cache[ $key ] ) ) {
+		$cache[ $key ] = array_column( eefpsstats_get_views_of_most_popular_posts( $start, $end ), 'count', 'url' );
 	}
-
-	return $results[0]->count;
+	return $cache[ $key ][ \PSStats\Normalizer::target_path( $url ) ] ?? 0;
 }
 
 /**
@@ -396,65 +305,12 @@ function eefpsstats_get_views_of_post( $url, $start = '', $end = '' ) {
  * @return array an array with the most referrers, ordered by view count
  */
 function eefpsstats_get_views_for_all_referrers( $post_url = '', $start = '', $end = '' ) {
-	global $wpdb;
-	if ( '' === $post_url ) {
-		// For all posts.
-		if ( '' === $start && '' === $end ) {
-			return $wpdb->get_results(
-				"SELECT COUNT(`referrer`) as `count`, `referrer` as `url`,
-				SUBSTRING_INDEX(SUBSTRING_INDEX(TRIM(LEADING 'www.' FROM(TRIM(LEADING 'https://' FROM TRIM(LEADING 'http://' FROM TRIM(`referrer`))))), '/', 1), ':', 1) as `host`
-				FROM `$wpdb->psstats`
-				WHERE `referrer` != ''
-				GROUP BY `host`
-				ORDER BY `count` DESC",
-				ARRAY_A
-			);
-		}
-
-		return $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT COUNT(`referrer`) as `count`, `referrer` as `url`,
-                SUBSTRING_INDEX(SUBSTRING_INDEX(TRIM(LEADING 'www.' FROM(TRIM(LEADING 'https://' FROM TRIM(LEADING 'http://' FROM TRIM(`referrer`))))), '/', 1), ':', 1) as `host`
-                FROM `$wpdb->psstats`
-                WHERE `referrer` != '' AND `created` >= %s AND `created` <= %s
-                GROUP BY `host`
-                ORDER BY `count` DESC",
-				$start,
-				$end
-			),
-			ARRAY_A
-		);
-	}
-
-	// Only for selected posts.
-	if ( '' === $start && '' === $end ) {
-		return $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT COUNT(`referrer`) as `count`, `referrer` as `url`,
-                SUBSTRING_INDEX(SUBSTRING_INDEX(TRIM(LEADING 'www.' FROM(TRIM(LEADING 'https://' FROM TRIM(LEADING 'http://' FROM TRIM(`referrer`))))), '/', 1), ':', 1) as `host`
-                FROM `$wpdb->psstats`
-                WHERE `referrer` != '' AND target = %s
-                GROUP BY `host`
-                ORDER BY `count` DESC",
-				$post_url
-			),
-			ARRAY_A
-		);
-	}
-
-	return $wpdb->get_results(
-		$wpdb->prepare(
-			"SELECT COUNT(`referrer`) as `count`, `referrer` as `url`,
-            SUBSTRING_INDEX(SUBSTRING_INDEX(TRIM(LEADING 'www.' FROM(TRIM(LEADING 'https://' FROM TRIM(LEADING 'http://' FROM TRIM(`referrer`))))), '/', 1), ':', 1) as `host`
-            FROM `$wpdb->psstats`
-            WHERE `referrer` != '' AND `target` = %s AND `created` >= %s AND `created` <= %s
-            GROUP BY `host`
-            ORDER BY `count` DESC",
-			$post_url,
-			$start,
-			$end
-		),
-		ARRAY_A
+	list( $from, $to ) = eefpsstats_get_period( $start, $end );
+	$rows = \PSStats\Api\Provider::instance()->referrer_stats( $from, $to, '' === $post_url ? array() : array( $post_url ) );
+	eefpsstats_check_query();
+	return array_map(
+		static fn ( array $row ): array => array( 'host' => $row['domain'], 'url' => 'https://' . $row['domain'], 'count' => $row['views'] ),
+		$rows
 	);
 }
 
@@ -464,12 +320,7 @@ function eefpsstats_get_views_for_all_referrers( $post_url = '', $start = '', $e
  * @return array an array of urls
  */
 function eefpsstats_get_post_urls() {
-	global $wpdb;
-
-	return $wpdb->get_results(
-		"SELECT DISTINCT `target`
-		FROM `$wpdb->psstats`
-		ORDER BY `target` ASC",
-		ARRAY_A
-	);
+	$paths = array_column( eefpsstats_get_views_of_most_popular_posts(), 'url' );
+	sort( $paths );
+	return array_map( static fn ( string $path ): array => array( 'target' => $path ), $paths );
 }

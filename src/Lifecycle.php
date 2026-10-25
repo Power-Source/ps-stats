@@ -21,20 +21,24 @@ final class Lifecycle {
 		try {
 			Database::create_table();
 			if ( false === get_option( Plugin::OPTION_SETTINGS, false ) ) {
+				$legacy = get_option( 'psstats', array() );
+				$retention = is_array( $legacy ) && isset( $legacy['days'] ) && is_numeric( $legacy['days'] ) && (int) $legacy['days'] >= 0 ? (int) $legacy['days'] : 30;
 				add_option(
 					Plugin::OPTION_SETTINGS,
-					array( 'retention' => 30, 'skip_logged_in' => true, 'excluded_paths' => array() ),
+					array( 'retention' => $retention, 'skip_logged_in' => true, 'excluded_paths' => array(), 'collect_referrers' => false, 'referrer_domains' => array(), 'marketpress_metrics' => false ),
 					'',
 					false
 				);
 			}
 			update_option( Plugin::OPTION_SCHEMA, PS_STATS_SCHEMA_VERSION, false );
+			delete_option( 'ps_stats_install_error' );
 			if ( ! wp_next_scheduled( Plugin::CRON_CLEANUP ) ) {
 				wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', Plugin::CRON_CLEANUP );
 			}
 			Migration::prepare();
 		} catch ( \Throwable $error ) {
 			update_option( 'ps_stats_install_error', sanitize_text_field( $error->getMessage() ), false );
+			do_action( 'ps_stats_database_error', 'install', $error->getMessage() );
 		}
 	}
 
@@ -96,10 +100,15 @@ final class Lifecycle {
 		global $wpdb;
 		self::clear_schedules();
 		$wpdb->query( 'DROP TABLE IF EXISTS ' . Database::table() );
+		$wpdb->query( 'DROP TABLE IF EXISTS ' . Database::metrics_table() );
 		delete_option( Plugin::OPTION_SETTINGS );
 		delete_option( Plugin::OPTION_SCHEMA );
 		delete_option( Migration::OPTION );
 		delete_option( 'ps_stats_install_error' );
+		delete_option( 'ps_stats_cleanup_last_success' );
+		delete_option( 'ps_stats_cleanup_error' );
+		delete_option( 'ps_stats_database_error' );
+		delete_option( 'ps_stats_dashboard' );
 	}
 
 	private static function clear_schedules(): void {

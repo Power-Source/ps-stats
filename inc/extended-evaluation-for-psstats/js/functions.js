@@ -15,8 +15,8 @@ function eefpsstatsTableToCsv( $table, filename ) {
 					return $cols
 						.map( function ( j, col ) {
 							const $col = jQuery( col ),
-								text = $col.text();
-							return text.replace( /"/g, '""' ); // escape double quotes
+								text = $col.text().trim();
+							return ( /^[=+\-@\t\r]/.test( text ) ? "'" + text : text ).replace( /"/g, '""' );
 						} )
 						.get()
 						.join( tmpColDelim );
@@ -40,7 +40,7 @@ function eefpsstatsColumnChart( id, dataArray ) {
 	const dataMap = new Map( dataArray );
 	const seriesData = [];
 	for ( const [ x, y ] of dataMap.entries() ) {
-		seriesData.push( { meta: x, value: y } );
+		seriesData.push( { meta: jQuery( '<span>' ).text( x ).html(), value: y } );
 	}
 	const data = {
 		labels: Array.from( { length: dataArray.length }, ( x, i ) => i + 1 ),
@@ -101,7 +101,7 @@ function eefpsstatsLineChart( id, dataArray, type = 'default' ) {
 	const dataMap = new Map( dataArray );
 	const seriesData = [];
 	for ( const [ x, y ] of dataMap.entries() ) {
-		seriesData.push( { meta: x, value: y } );
+		seriesData.push( { meta: jQuery( '<span>' ).text( x ).html(), value: y } );
 	}
 	const data = {
 		labels: Array.from( dataMap.keys() ),
@@ -262,7 +262,7 @@ function eefpsstatsValidateDateRange() {
 		correct =
 			start[ 0 ].validity.valid &&
 			end[ 0 ].validity.valid &&
-			( ( start.val() && end.val() ) ||
+			( ( start.val() && end.val() && start.val() <= end.val() ) ||
 				( ! start.val() && ! end.val() ) );
-	jQuery( 'form button' ).prop( 'disabled', ! correct );
+	start.closest( 'form' ).find( 'button' ).prop( 'disabled', ! correct );
 }

@@ -7,55 +7,101 @@ use PSStats\Database;
 use PSStats\Migration;
 use PSStats\Normalizer;
 use PSStats\Plugin;
+use PSStats\Privacy;
 
 defined( 'ABSPATH' ) || exit;
 
 final class AdminPage {
 	private const PAGE = 'ps-stats';
+	private const SETTINGS_PAGE = 'ps-stats-settings';
 
 	public static function register(): void {
 		add_action( 'admin_menu', array( self::class, 'menu' ) );
+		add_action( 'admin_menu', array( self::class, 'redirect_legacy_page' ), 1 );
 		add_action( 'admin_post_ps_stats_save', array( self::class, 'save_settings' ) );
 		add_action( 'admin_post_ps_stats_delete_before', array( self::class, 'delete_before' ) );
 		add_action( 'admin_post_ps_stats_delete_referrers', array( self::class, 'delete_referrers' ) );
 		add_action( 'admin_post_ps_stats_delete_all', array( self::class, 'delete_all' ) );
 		add_action( 'admin_post_ps_stats_resume_migration', array( self::class, 'resume_migration' ) );
+		add_action( 'admin_post_ps_stats_delete_legacy', array( self::class, 'delete_legacy' ) );
+	}
+
+	public static function redirect_legacy_page(): void {
+		$page = isset( $_GET['page'] ) && is_string( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+		$aliases = array(
+			'extended_evaluation_for_psstats_dashboard' => self::PAGE,
+			'extended_evaluation_for_psstats_content'   => 'ps-stats-content',
+			'extended_evaluation_for_psstats_referrer'  => 'ps-stats-referrers',
+			'psstats-settings'                         => self::SETTINGS_PAGE,
+		);
+		if ( ! isset( $aliases[ $page ] ) ) {
+			return;
+		}
+		$args = array( 'page' => $aliases[ $page ] );
+		foreach ( array( 'year', 'post', 'posttype' ) as $key ) {
+			if ( isset( $_GET[ $key ] ) && is_string( $_GET[ $key ] ) ) {
+				$args[ $key ] = rawurlencode( sanitize_text_field( wp_unslash( $_GET[ $key ] ) ) );
+			}
+		}
+		$base = self::SETTINGS_PAGE === $args['page'] ? 'options-general.php' : 'admin.php';
+		wp_safe_redirect( add_query_arg( $args, admin_url( $base ) ) );
+		exit;
 	}
 
 	public static function menu(): void {
-		add_dashboard_page(
+		$capability = current_user_can( 'manage_options' ) ? 'manage_options' : 'see_psstats_evaluation';
+		$pages = array();
+		$pages[] = add_menu_page(
 			__( 'PS Stats', 'ps-stats' ),
 			__( 'PS Stats', 'ps-stats' ),
-			'manage_options',
+			$capability,
 			self::PAGE,
-			array( self::class, 'render' )
+			array( self::class, 'render' ),
+			'dashicons-chart-bar',
+			50
 		);
+		add_submenu_page( self::PAGE, __( 'Übersicht', 'ps-stats' ), __( 'Übersicht', 'ps-stats' ), $capability, self::PAGE, array( self::class, 'render' ) );
+		$pages[] = add_submenu_page( self::PAGE, __( 'Inhalte', 'ps-stats' ), __( 'Inhalte', 'ps-stats' ), $capability, 'ps-stats-content', array( Evaluation::class, 'content' ) );
+		$pages[] = add_submenu_page( self::PAGE, __( 'Referrer', 'ps-stats' ), __( 'Referrer', 'ps-stats' ), $capability, 'ps-stats-referrers', array( Evaluation::class, 'referrers' ) );
+		add_submenu_page( self::PAGE, __( 'MarketPress-Quelle', 'ps-stats' ), __( 'MarketPress', 'ps-stats' ), 'manage_options', 'ps-stats-shop', array( ShopPage::class, 'render' ) );
+		foreach ( $pages as $page ) {
+			add_action( 'admin_print_styles-' . $page, array( Evaluation::class, 'assets' ) );
+		}
+		load_plugin_textdomain( 'psstats', false, dirname( plugin_basename( PS_STATS_FILE ) ) . '/languages' );
 		add_options_page(
 			__( 'PS Stats', 'ps-stats' ),
 			__( 'PS Stats', 'ps-stats' ),
 			'manage_options',
-			self::PAGE,
-			array( self::class, 'render' )
+			self::SETTINGS_PAGE,
+			array( self::class, 'render_settings' )
 		);
 	}
 
 	public static function render(): void {
-		self::guard();
-		$provider = Provider::instance();
-		$settings = Plugin::settings();
+		if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'see_psstats_evaluation' ) ) {
+			wp_die( esc_html__( 'Du hast keine Berechtigung für diese Aktion.', 'ps-stats' ), 403 );
+		}
 		$today    = current_time( 'Y-m-d' );
-		$from     = gmdate( 'Y-m-d', strtotime( $today . ' -29 days' ) );
-		$daily    = $provider->daily_visits( $from, $today );
-		$landing  = array_slice( $provider->landing_page_stats( $from, $today ), 0, 10 );
-		$referrer = array_slice( $provider->referrer_stats( $from, $today ), 0, 10 );
-		$bounds   = $provider->date_bounds();
 		$overview = self::overview( $today );
-		$migration = Migration::state();
-		$next_cleanup = wp_next_scheduled( Plugin::CRON_CLEANUP );
 		?>
 		<div class="wrap ps-stats">
 			<h1><?php esc_html_e( 'PS Stats', 'ps-stats' ); ?></h1>
 			<?php self::notice(); ?>
+			<?php if ( get_option( 'ps_stats_install_error' ) ) : ?>
+				<div class="notice notice-error inline">
+					<p>
+						<?php
+						echo esc_html(
+							sprintf(
+								/* translators: %s: installation error. */
+								__( 'PS Stats konnte die Statistikdatenbank nicht vorbereiten: %s', 'ps-stats' ),
+								get_option( 'ps_stats_install_error' )
+							)
+						);
+						?>
+					</p>
+				</div>
+			<?php endif; ?>
 			<p><?php esc_html_e( 'PS Stats zählt ausschließlich Seitenaufrufe auf dieser Website. Es werden keine Personen oder Sitzungen verfolgt.', 'ps-stats' ); ?></p>
 
 			<h2><?php esc_html_e( 'Übersicht', 'ps-stats' ); ?></h2>
@@ -68,12 +114,23 @@ final class AdminPage {
 				</tbody>
 			</table>
 
-			<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;max-width:1100px">
-				<?php self::daily_table( $daily ); ?>
-				<?php self::ranking_table( __( 'Top-Zielpfade (30 Tage)', 'ps-stats' ), __( 'Pfad', 'ps-stats' ), 'path', $landing ); ?>
-				<?php self::ranking_table( __( 'Top-Referrer-Domains (30 Tage)', 'ps-stats' ), __( 'Domain', 'ps-stats' ), 'domain', $referrer ); ?>
-			</div>
+			<?php Evaluation::render( 'dashboard' ); ?>
+		</div>
+		<?php
+	}
 
+	public static function render_settings(): void {
+		self::guard();
+		$settings = Plugin::settings();
+		$bounds = Provider::instance()->date_bounds();
+		$migration = Migration::state();
+		$next_cleanup = wp_next_scheduled( Plugin::CRON_CLEANUP );
+		?>
+		<div class="wrap ps-stats">
+			<h1><?php esc_html_e( 'PS Stats – Einstellungen', 'ps-stats' ); ?></h1>
+			<?php self::notice(); ?>
+			<?php Status::render(); ?>
+			<div class="notice notice-info inline"><p><?php esc_html_e( 'Datensparsame Erfassung: Nur die Startseite und kanonische, veröffentlichte öffentliche Einzelinhalte ohne Passwort werden neu gezählt. Unbekannte dynamische Routen, Autoren-/Mitgliederseiten und typische Konto-, Bestell-, Checkout-, Nachrichten- und Download-Pfade werden ausgeschlossen. Eigene sensible öffentliche Inhalte müssen zusätzlich ausgeschlossen werden. Bestehende Daten werden nicht automatisch umgeschrieben.', 'ps-stats' ); ?></p></div>
 			<h2><?php esc_html_e( 'Migration', 'ps-stats' ); ?></h2>
 			<p>
 				<?php
@@ -91,6 +148,15 @@ final class AdminPage {
 			<?php if ( $migration['error'] ) : ?>
 				<div class="notice notice-error inline"><p><?php echo esc_html( $migration['error'] ); ?></p></div>
 			<?php endif; ?>
+			<?php if ( 'complete' === $migration['status'] && Database::table_exists( Database::legacy_table() ) ) : ?>
+				<div class="notice notice-warning inline"><p><?php esc_html_e( 'Die alte Quelltabelle ist noch vorhanden und kann vollständige Referrer oder sensible Pfade enthalten. Nach Prüfung der Migration ausdrücklich löschen; auch Sicherungskopien separat berücksichtigen.', 'ps-stats' ); ?></p></div>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<input type="hidden" name="action" value="ps_stats_delete_legacy">
+					<?php wp_nonce_field( 'ps_stats_delete_legacy' ); ?>
+					<label><input type="checkbox" name="confirm" value="1" required> <?php esc_html_e( 'Migration geprüft; alte Quelltabelle unwiderruflich entfernen.', 'ps-stats' ); ?></label>
+					<?php submit_button( __( 'Alte Quelltabelle löschen', 'ps-stats' ), 'secondary', 'submit', false ); ?>
+				</form>
+			<?php endif; ?>
 			<?php if ( in_array( $migration['status'], array( 'pending', 'running', 'failed' ), true ) ) : ?>
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="ps_stats_resume_migration">
@@ -107,12 +173,26 @@ final class AdminPage {
 					<tr>
 						<th><label for="ps-stats-retention"><?php esc_html_e( 'Aufbewahrung', 'ps-stats' ); ?></label></th>
 						<td><select id="ps-stats-retention" name="retention">
-							<?php foreach ( array( 7, 14, 30, 90, 180, 365, 0 ) as $days ) : ?>
+							<?php foreach ( array_unique( array( 7, 14, 30, 90, 180, 365, 0, $settings['retention'] ) ) as $days ) : ?>
 								<option value="<?php echo esc_attr( $days ); ?>" <?php selected( $settings['retention'], $days ); ?>>
 									<?php echo esc_html( 0 === $days ? __( 'Unbegrenzt', 'ps-stats' ) : sprintf( __( '%d Tage', 'ps-stats' ), $days ) ); ?>
 								</option>
 							<?php endforeach; ?>
-						</select></td>
+						</select>
+						<p class="description"><?php esc_html_e( 'Eine kürzere Frist wirkt beim nächsten Bereinigungslauf auch auf vorhandene Daten.', 'ps-stats' ); ?></p>
+						<label><input type="checkbox" name="confirm_shorter_retention" value="1"> <?php esc_html_e( 'Falls ich die Frist verkürze: automatische Löschung älterer Daten ausdrücklich bestätigen.', 'ps-stats' ); ?></label></td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'Referrer-Erfassung', 'ps-stats' ); ?></th>
+						<td><label><input type="checkbox" name="collect_referrers" value="1" <?php checked( $settings['collect_referrers'] ); ?>> <?php esc_html_e( 'Neue Referrer nur aus der folgenden Freigabeliste erfassen', 'ps-stats' ); ?></label>
+						<p><label for="ps-stats-referrer-domains"><?php esc_html_e( 'Freigegebene externe Domains (exakte Domain, eine pro Zeile)', 'ps-stats' ); ?></label></p>
+						<textarea id="ps-stats-referrer-domains" name="referrer_domains" rows="4" class="large-text code"><?php echo esc_textarea( implode( "\n", $settings['referrer_domains'] ) ); ?></textarea>
+						<p class="description"><?php esc_html_e( 'Keine Freigabe für personenbezogene oder kundenspezifische Subdomains erteilen. Andere Herkünfte werden ohne Domain gezählt. Deaktivieren löscht keine alten Referrer; dafür die Datenpflege verwenden.', 'ps-stats' ); ?></p></td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'MarketPress-Zusatzstatistik', 'ps-stats' ); ?></th>
+						<td><label><input type="checkbox" name="marketpress_metrics" value="1" <?php checked( $settings['marketpress_metrics'] ); ?>> <?php esc_html_e( 'Vorhandene MarketPress-Statistik als nur lesende Monatsquelle verwenden', 'ps-stats' ); ?></label>
+						<p class="description"><?php esc_html_e( 'Standardmäßig aus. Unter PS Stats → MarketPress werden Bestellwerte und Gratis-Download-Ereignisse aus der aktivierten MarketPress-Statistik zusammengefasst. PS Stats erfasst keine eigenen Shop-Ereignisse und kopiert keine Kennungen. Die Quelldaten und deren Löschfristen bleiben in MarketPress. Vorhandene alte PS-Stats-Shopkennzahlen bleiben unverändert und werden nicht addiert.', 'ps-stats' ); ?></p></td>
 					</tr>
 					<tr>
 						<th><?php esc_html_e( 'Angemeldete Personen', 'ps-stats' ); ?></th>
@@ -138,32 +218,60 @@ final class AdminPage {
 			<?php self::destructive_forms(); ?>
 
 			<h2><?php esc_html_e( 'Datenschutz und Datenumfang', 'ps-stats' ); ?></h2>
-			<p><?php esc_html_e( 'Gespeichert werden ausschließlich das lokale Datum, der normalisierte lokale Zielpfad ohne Abfrage oder Fragment, die externe Referrer-Domain ohne Pfad oder Abfrage und die aggregierte Anzahl der Aufrufe. PS Stats speichert keine IP-Adressen oder Hashes, Cookies, lokalen Kennungen, Benutzerkennungen, User-Agents, Geräte-, Fingerprint- oder Sitzungsdaten und keine vollständigen Referrer. Es gibt keine externen Anfragen, Drittanbieter-Analysen oder KI-Funktionen. Deshalb existiert kein personenbezogener Datenexport.', 'ps-stats' ); ?></p>
+			<?php echo wpautop( esc_html( Privacy::text() ) ); ?>
 		</div>
 		<?php
 	}
 
 	public static function save_settings(): void {
 		self::verify( 'ps_stats_save' );
-		$allowed   = array( 0, 7, 14, 30, 90, 180, 365 );
-		$retention = isset( $_POST['retention'] ) ? (int) $_POST['retention'] : 30;
-		$retention = in_array( $retention, $allowed, true ) ? $retention : 30;
-		$raw       = isset( $_POST['excluded_paths'] ) ? sanitize_textarea_field( wp_unslash( $_POST['excluded_paths'] ) ) : '';
+		$current = Plugin::settings();
+		$allowed = array( 0, 7, 14, 30, 90, 180, 365, $current['retention'] );
+		$retention = isset( $_POST['retention'] ) && is_scalar( $_POST['retention'] ) ? filter_var( $_POST['retention'], FILTER_VALIDATE_INT ) : false;
+		if ( false === $retention || ! in_array( $retention, $allowed, true ) ) {
+			self::redirect( 'invalid_settings', true );
+		}
+		if ( 0 !== $retention && ( 0 === $current['retention'] || $retention < $current['retention'] ) && '1' !== ( $_POST['confirm_shorter_retention'] ?? '' ) ) {
+			self::redirect( 'retention_confirmation_required', true );
+		}
+		$domains = array();
+		$raw_domains = isset( $_POST['referrer_domains'] ) && is_string( $_POST['referrer_domains'] ) ? wp_unslash( $_POST['referrer_domains'] ) : '';
+		foreach ( preg_split( '/\R/', $raw_domains ) as $domain ) {
+			$domain = strtolower( trim( $domain ) );
+			if ( '' === $domain ) {
+				continue;
+			}
+			if ( Normalizer::referrer_domain( 'https://' . $domain ) !== $domain ) {
+				self::redirect( 'invalid_settings', true );
+			}
+			$domains[] = $domain;
+		}
+		if ( isset( $_POST['excluded_paths'] ) && ! is_string( $_POST['excluded_paths'] ) ) {
+			self::redirect( 'invalid_settings', true );
+		}
+		$raw = isset( $_POST['excluded_paths'] ) ? sanitize_textarea_field( wp_unslash( $_POST['excluded_paths'] ) ) : '';
 		$paths     = array();
 		foreach ( preg_split( '/\R/', $raw ) ?: array() as $path ) {
 			if ( '' !== trim( $path ) ) {
 				$paths[] = Normalizer::target_path( $path );
 			}
 		}
+		$new = array_merge( $current, array(
+			'retention' => $retention,
+			'skip_logged_in' => isset( $_POST['skip_logged_in'] ),
+			'excluded_paths' => array_values( array_unique( $paths ) ),
+			'collect_referrers' => isset( $_POST['collect_referrers'] ),
+			'referrer_domains' => array_values( array_unique( $domains ) ),
+			'marketpress_metrics' => isset( $_POST['marketpress_metrics'] ),
+		) );
 		update_option(
 			Plugin::OPTION_SETTINGS,
-			array(
-				'retention'      => $retention,
-				'skip_logged_in' => isset( $_POST['skip_logged_in'] ),
-				'excluded_paths' => array_values( array_unique( $paths ) ),
-			),
+			$new,
 			false
 		);
+		if ( get_option( Plugin::OPTION_SETTINGS ) !== $new ) {
+			self::redirect( 'db_error', true );
+		}
 		self::redirect( 'saved' );
 	}
 
@@ -174,7 +282,8 @@ final class AdminPage {
 		if ( false === $valid || $valid->format( 'Y-m-d' ) !== $date ) {
 			self::redirect( 'invalid_date', true );
 		}
-		self::redirect( Database::delete_before( $date ) ? 'deleted_before' : 'db_error', ! Database::delete_before( $date ) );
+		$success = Database::delete_before( $date );
+		self::redirect( $success ? 'deleted_before' : 'db_error', ! $success );
 	}
 
 	public static function delete_referrers(): void {
@@ -195,6 +304,12 @@ final class AdminPage {
 		self::redirect( 'migration_scheduled' );
 	}
 
+	public static function delete_legacy(): void {
+		self::verify_destructive( 'ps_stats_delete_legacy' );
+		$success = Migration::delete_legacy();
+		self::redirect( $success ? 'legacy_deleted' : 'db_error', ! $success );
+	}
+
 	private static function overview( string $today ): array {
 		global $wpdb;
 		$table = Database::table();
@@ -208,25 +323,11 @@ final class AdminPage {
 			),
 			ARRAY_A
 		);
+		if ( '' !== $wpdb->last_error ) {
+			do_action( 'ps_stats_database_error', 'overview', $wpdb->last_error );
+			wp_die( esc_html__( 'Die Statistikübersicht konnte nicht geladen werden.', 'ps-stats' ), 500 );
+		}
 		return array_map( 'intval', is_array( $row ) ? $row : array( 'total' => 0, 'today' => 0, 'paths' => 0, 'domains' => 0 ) );
-	}
-
-	private static function daily_table( array $rows ): void {
-		?>
-		<div><h3><?php esc_html_e( 'Tägliche Aufrufe (30 Tage)', 'ps-stats' ); ?></h3><table class="widefat striped"><thead><tr><th><?php esc_html_e( 'Datum', 'ps-stats' ); ?></th><th><?php esc_html_e( 'Aufrufe', 'ps-stats' ); ?></th></tr></thead><tbody>
-		<?php foreach ( array_reverse( $rows ) as $row ) : ?><tr><td><?php echo esc_html( $row['date'] ); ?></td><td><?php echo esc_html( number_format_i18n( $row['views'] ) ); ?></td></tr><?php endforeach; ?>
-		<?php if ( array() === $rows ) : ?><tr><td colspan="2"><?php esc_html_e( 'Noch keine Daten.', 'ps-stats' ); ?></td></tr><?php endif; ?>
-		</tbody></table></div>
-		<?php
-	}
-
-	private static function ranking_table( string $title, string $label, string $key, array $rows ): void {
-		?>
-		<div><h3><?php echo esc_html( $title ); ?></h3><table class="widefat striped"><thead><tr><th><?php echo esc_html( $label ); ?></th><th><?php esc_html_e( 'Aufrufe', 'ps-stats' ); ?></th></tr></thead><tbody>
-		<?php foreach ( $rows as $row ) : ?><tr><td><?php echo esc_html( $row[ $key ] ); ?></td><td><?php echo esc_html( number_format_i18n( $row['views'] ) ); ?></td></tr><?php endforeach; ?>
-		<?php if ( array() === $rows ) : ?><tr><td colspan="2"><?php esc_html_e( 'Noch keine Daten.', 'ps-stats' ); ?></td></tr><?php endif; ?>
-		</tbody></table></div>
-		<?php
 	}
 
 	private static function destructive_forms(): void {
@@ -268,8 +369,8 @@ final class AdminPage {
 		}
 	}
 
-	private static function redirect( string $message, bool $error = false ): never {
-		wp_safe_redirect( add_query_arg( array( 'page' => self::PAGE, 'ps_stats_notice' => $message, 'ps_stats_error' => $error ? 1 : 0 ), admin_url( 'index.php' ) ) );
+	private static function redirect( string $message, bool $error = false ): void {
+		wp_safe_redirect( add_query_arg( array( 'page' => self::SETTINGS_PAGE, 'ps_stats_notice' => $message, 'ps_stats_error' => $error ? 1 : 0 ), admin_url( 'options-general.php' ) ) );
 		exit;
 	}
 
@@ -287,6 +388,9 @@ final class AdminPage {
 			'invalid_date' => __( 'Das angegebene Datum ist ungültig.', 'ps-stats' ),
 			'db_error' => __( 'Die Datenbankaktion ist fehlgeschlagen.', 'ps-stats' ),
 			'confirmation_required' => __( 'Die ausdrückliche Bestätigung fehlt.', 'ps-stats' ),
+			'legacy_deleted' => __( 'Alte Quelltabelle gelöscht.', 'ps-stats' ),
+			'invalid_settings' => __( 'Ungültige Einstellungen. Bitte Aufbewahrung und Domain-Freigaben prüfen. Es wurde nichts gespeichert.', 'ps-stats' ),
+			'retention_confirmation_required' => __( 'Die kürzere Aufbewahrung wurde nicht gespeichert: Bitte die automatische Löschung ausdrücklich bestätigen.', 'ps-stats' ),
 		);
 		if ( isset( $messages[ $key ] ) ) {
 			$class = ! empty( $_GET['ps_stats_error'] ) ? 'notice notice-error' : 'notice notice-success';

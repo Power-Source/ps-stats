@@ -5,6 +5,14 @@
 	clear: both;
 }
 
+.eefpsstats section {
+	overflow-x: auto;
+}
+
+.eefpsstats .chart-container {
+	min-width: 280px;
+}
+
 .eefpsstats td,
 .eefpsstats th {
 	padding: 0.7em;
@@ -91,4 +99,29 @@
 .eefpsstats .chart-legend ol {
 	column-width: 20em;
 	column-gap: 20px;
+}
+
+.eefpsstats a:focus,
+.eefpsstats button:focus {
+	outline: 2px solid #0074a2;
+	outline-offset: 3px;
+}
+
+@media (max-width: 782px) {
+	.eefpsstats .nav-tab-wrapper {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px;
+	}
+
+	.eefpsstats fieldset input,
+	.eefpsstats fieldset select,
+	.eefpsstats fieldset button {
+		max-width: 100%;
+		margin: 4px 0;
+	}
+
+	.eefpsstats fieldset label {
+		display: block;
+	}
 }

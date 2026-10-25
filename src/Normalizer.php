@@ -5,6 +5,11 @@ namespace PSStats;
 defined( 'ABSPATH' ) || exit;
 
 final class Normalizer {
+	public static function local_url( string $path ): string {
+		$home = wp_parse_url( home_url( '/' ) );
+		return $home['scheme'] . '://' . $home['host'] . ( isset( $home['port'] ) ? ':' . $home['port'] : '' ) . '/' . ltrim( $path, '/' );
+	}
+
 	public static function target_path( mixed $value ): string {
 		$value = is_string( $value ) ? trim( wp_unslash( $value ) ) : '';
 		$path  = wp_parse_url( $value, PHP_URL_PATH );

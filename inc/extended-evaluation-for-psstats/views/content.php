@@ -32,7 +32,7 @@ if ( isset( $_POST['start'], $_POST['end'] ) && check_admin_referer( 'content' )
 	if ( '' !== $start || '' !== $end ) {
 		$valid_start = eefpsstats_is_valid_date_string( $start );
 		$valid_end = eefpsstats_is_valid_date_string( $end );
-		if ( ! $valid_start || ! $valid_end ) {
+		if ( ! $valid_start || ! $valid_end || $start > $end ) {
 			// Error message if at least one date is not valid.
 			$message = __( 'No valid date period set. Please enter a valid start and a valid end date!', 'psstats' );
 		}
@@ -40,7 +40,7 @@ if ( isset( $_POST['start'], $_POST['end'] ) && check_admin_referer( 'content' )
 }
 ?>
 <div class="wrap eefpsstats">
-	<h1><?php esc_html_e( 'PS-Stats – Extended Evaluation', 'psstats' ); ?>
+	<h1><?php esc_html_e( 'PS Stats', 'ps-stats' ); ?>
 			&rsaquo; <?php esc_html_e( 'Content', 'psstats' ); ?></h1>
 	<?php if ( '' !== $message ) { ?>
 	<div class="notice notice-error">
@@ -48,16 +48,26 @@ if ( isset( $_POST['start'], $_POST['end'] ) && check_admin_referer( 'content' )
 	</div>
 	<?php } ?>
 	<nav class="nav-tab-wrapper wp-clearfix" aria-label="<?php esc_html_e( 'Popular Content and Post Types', 'psstats' ); ?>">
-		<a href="<?php echo esc_url( admin_url( 'admin.php?page=extended_evaluation_for_psstats_content' ) ); ?>"
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=ps-stats-content' ) ); ?>"
 			class="<?php eefpsstats_echo_tab_class( 'popular' === $selected_post_type ); ?>">
 				<?php esc_html_e( 'Most Popular Content', 'psstats' ); ?></a>
 	<?php foreach ( $post_types as $post_type ) { ?>
-		<a href="<?php echo esc_url( admin_url( 'admin.php?page=extended_evaluation_for_psstats_content&posttype=' . $post_type ) ); ?>"
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=ps-stats-content&posttype=' . $post_type ) ); ?>"
 			class="<?php eefpsstats_echo_tab_class( $selected_post_type === $post_type ); ?>">
 				<?php echo esc_html( get_post_type_object( $post_type )->labels->name ); ?></a>
 	<?php } ?>
 	</nav>
 <?php
+if ( '' !== $message ) {
+	?>
+	<form method="post">
+		<?php wp_nonce_field( 'content' ); ?>
+		<?php eefpsstats_echo_date_selection( $valid_start, $start, $valid_end, $end ); ?>
+	</form>
+</div>
+	<?php
+	return;
+}
 if ( 'popular' === $selected_post_type ) {
 	// Show most popular content.
 	if ( $valid_start && $valid_end ) {
@@ -136,10 +146,10 @@ if ( 'popular' === $selected_post_type ) {
 				foreach ( $views_per_post as $post ) {
 					?>
 				<tr>
-					<td><a href="<?php echo esc_url( home_url( $post['url'] ) ); ?>" target="_blank">
+					<td><a href="<?php echo esc_url( \PSStats\Normalizer::local_url( $post['url'] ) ); ?>" target="_blank" rel="noopener noreferrer">
 							<?php echo esc_html( eefpsstats_get_post_title_from_url( $post['url'] ) ); ?>
 						</a></td>
-					<td><?php echo esc_url( $post['url'] ); ?></td>
+					<td><?php echo esc_html( $post['url'] ); ?></td>
 					<td><?php echo esc_html( eefpsstats_get_post_type_name_from_url( $post['url'] ) ); ?></td>
 					<td class="right"><?php eefpsstats_echo_number( $post['count'] ); ?></td>
 					<td class="right"><?php eefpsstats_echo_percentage( $post['count'] / $total ); ?></td>
@@ -214,7 +224,7 @@ if ( 'popular' === $selected_post_type ) {
 				?>
 				<tr>
 					<td><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></td>
-					<td><?php echo esc_url( wp_make_link_relative( get_the_permalink() ) ); ?></td>
+					<td><?php echo esc_html( wp_make_link_relative( get_the_permalink() ) ); ?></td>
 					<td class="right"><?php eefpsstats_echo_number( $views ); ?></td>
 				</tr>
 			<?php endwhile; ?>

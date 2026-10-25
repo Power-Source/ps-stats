@@ -9,182 +9,199 @@ final class Migration {
 	private const BATCH_SIZE = 250;
 
 	public static function prepare(): void {
-		global $wpdb;
-		$legacy = Database::legacy_table();
-		if ( ! Database::table_exists( $legacy ) ) {
-			self::save(
-				array(
-					'status'       => 'complete',
-					'cursor'       => 0,
-					'processed'    => 0,
-					'source_count' => 0,
-					'max_id'       => 0,
-					'error'        => '',
-				)
-			);
-			return;
-		}
-
-		$state = self::state();
-		if ( in_array( $state['status'], array( 'running', 'pending', 'failed' ), true ) && $state['source_count'] > 0 ) {
+		if ( ! Database::lock() ) {
 			self::schedule();
 			return;
 		}
-
-		$max_id = $wpdb->get_var( "SELECT MAX(id) FROM {$legacy}" );
-		if ( '' !== $wpdb->last_error ) {
-			self::fail( $wpdb->last_error );
-			return;
+		try {
+			$state = self::state();
+			if ( 'not_started' !== $state['status'] ) {
+				if ( 'complete' !== $state['status'] ) {
+					self::schedule();
+				}
+				return;
+			}
+			global $wpdb;
+			$legacy = Database::legacy_table();
+			if ( ! Database::table_exists( $legacy ) ) {
+				if ( '' !== $wpdb->last_error ) {
+					throw new \RuntimeException( $wpdb->last_error );
+				}
+				$state['status'] = 'complete';
+			} else {
+				$row = $wpdb->get_row( "SELECT COUNT(*) AS total, COALESCE(MAX(id),0) AS max_id FROM {$legacy}", ARRAY_A );
+				if ( ! is_array( $row ) || '' !== $wpdb->last_error ) {
+					throw new \RuntimeException( 'PS Stats: Legacy-Bestand konnte nicht geprüft werden.' );
+				}
+				$state['source_count'] = (int) $row['total'];
+				$state['max_id'] = (int) $row['max_id'];
+				$state['status'] = 'pending';
+			}
+			self::save( $state );
+			if ( 'pending' === $state['status'] ) {
+				self::schedule();
+			}
+		} catch ( \RuntimeException $error ) {
+			self::fail( $error->getMessage() );
+		} finally {
+			Database::unlock();
 		}
-		$max_id = (int) $max_id;
-		$count  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$legacy} WHERE id <= %d", $max_id ) );
-		if ( '' !== $wpdb->last_error ) {
-			self::fail( $wpdb->last_error );
-			return;
-		}
-
-		self::save(
-			array(
-				'status'       => 'pending',
-				'cursor'       => 0,
-				'processed'    => 0,
-				'source_count' => $count,
-				'max_id'       => $max_id,
-				'error'        => '',
-			)
-		);
-		self::schedule();
 	}
 
 	public static function run_batch(): void {
-		global $wpdb;
-		$state  = self::state();
-		$legacy = Database::legacy_table();
-
-		if ( ! in_array( $state['status'], array( 'pending', 'running', 'failed' ), true ) ) {
+		if ( ! Database::lock() ) {
+			self::schedule();
 			return;
 		}
-		if ( ! Database::table_exists( $legacy ) ) {
-			self::fail( __( 'Die Legacy-Tabelle fehlt vor Abschluss der Migration.', 'ps-stats' ) );
-			return;
+		try {
+			self::run_locked_batch();
+		} finally {
+			Database::unlock();
 		}
-
-		self::save( array_merge( $state, array( 'status' => 'running', 'error' => '' ) ) );
-		$rows = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT id,created,referrer,target FROM {$legacy}
-				WHERE id > %d AND id <= %d ORDER BY id ASC LIMIT %d",
-				$state['cursor'],
-				$state['max_id'],
-				self::BATCH_SIZE
-			),
-			ARRAY_A
-		);
-		if ( null === $rows || '' !== $wpdb->last_error ) {
-			self::fail( $wpdb->last_error ?: __( 'Legacy-Daten konnten nicht gelesen werden.', 'ps-stats' ) );
-			return;
-		}
-
-		if ( array() === $rows ) {
-			self::verify_and_finish();
-			return;
-		}
-
-		$aggregates = array();
-		foreach ( $rows as $row ) {
-			$date = self::valid_date( (string) $row['created'] ) ? (string) $row['created'] : current_time( 'Y-m-d' );
-			$path = Normalizer::target_path( $row['target'] );
-			$host = Normalizer::referrer_domain( $row['referrer'] );
-			$key  = $date . "\0" . $path . "\0" . $host;
-			if ( ! isset( $aggregates[ $key ] ) ) {
-				$aggregates[ $key ] = array( $date, $path, $host, 0 );
-			}
-			++$aggregates[ $key ][3];
-		}
-
-		$wpdb->query( 'START TRANSACTION' );
-		foreach ( $aggregates as $aggregate ) {
-			if ( ! Database::increment( $aggregate[0], $aggregate[1], $aggregate[2], $aggregate[3] ) ) {
-				$wpdb->query( 'ROLLBACK' );
-				self::fail( $wpdb->last_error ?: __( 'Aggregierte Daten konnten nicht geschrieben werden.', 'ps-stats' ) );
-				return;
-			}
-		}
-		if ( false === $wpdb->query( 'COMMIT' ) ) {
-			self::fail( $wpdb->last_error ?: __( 'Die Migrationstransaktion konnte nicht abgeschlossen werden.', 'ps-stats' ) );
-			return;
-		}
-
-		$state['cursor']    = (int) end( $rows )['id'];
-		$state['processed'] += count( $rows );
-		$state['status']     = 'running';
-		self::save( $state );
-		self::schedule();
 	}
 
-	private static function verify_and_finish(): void {
+	private static function run_locked_batch(): void {
 		global $wpdb;
-		$state  = self::state();
-		$legacy = Database::legacy_table();
-		$count  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$legacy} WHERE id <= %d", $state['max_id'] ) );
-
-		if ( '' !== $wpdb->last_error || $count !== $state['source_count'] || $state['processed'] !== $state['source_count'] ) {
-			self::fail(
-				sprintf(
-					/* translators: 1: processed rows, 2: expected rows, 3: current source rows. */
-					__( 'Prüfung fehlgeschlagen: %1$d verarbeitet, %2$d erwartet, %3$d vorhanden. Die Legacy-Tabelle bleibt erhalten.', 'ps-stats' ),
-					$state['processed'],
-					$state['source_count'],
-					$count
-				)
+		try {
+			Database::require_transactional( array( Database::table(), $wpdb->options ) );
+		} catch ( \RuntimeException $error ) {
+			self::fail( $error->getMessage() );
+			return;
+		}
+		$completed = false;
+		$error = '';
+		$success = Database::transaction( static function () use ( $wpdb, &$completed, &$error ): bool {
+			// Read directly: a persistent object cache must not serve an older cursor.
+			$value = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name=%s FOR UPDATE", self::OPTION ) );
+			if ( '' !== $wpdb->last_error ) {
+				$error = $wpdb->last_error;
+				return false;
+			}
+			$stored = maybe_unserialize( $value ?? '' );
+			$state = array_merge( self::defaults(), is_array( $stored ) ? $stored : array() );
+			if ( ! in_array( $state['status'], array( 'pending', 'running', 'failed' ), true ) ) {
+				return true;
+			}
+			$legacy = Database::legacy_table();
+			$rows = $wpdb->get_results(
+				$wpdb->prepare( "SELECT id,created,referrer,target FROM {$legacy} WHERE id > %d AND id <= %d ORDER BY id ASC LIMIT %d", $state['cursor'], $state['max_id'], self::BATCH_SIZE ),
+				ARRAY_A
 			);
+			if ( ! is_array( $rows ) || '' !== $wpdb->last_error ) {
+				$error = __( 'Legacy-Daten konnten nicht gelesen werden.', 'ps-stats' );
+				return false;
+			}
+			foreach ( $rows as $row ) {
+				$date = \DateTimeImmutable::createFromFormat( '!Y-m-d', (string) $row['created'] );
+				if ( false === $date || $date->format( 'Y-m-d' ) !== $row['created'] ) {
+					$error = sprintf( __( 'Ungültiges Datum in Legacy-Zeile %d. Der Stapel wurde nicht übernommen.', 'ps-stats' ), $row['id'] );
+					return false;
+				}
+				$path = Privacy::route( $row['target'] );
+				if ( null === $path ) {
+					++$state['skipped'];
+				} elseif ( ! Database::increment( $row['created'], $path, Privacy::referrer( $row['referrer'] ) ) ) {
+					$error = __( 'Aggregate konnten nicht geschrieben werden.', 'ps-stats' );
+					return false;
+				}
+				$state['cursor'] = (int) $row['id'];
+				++$state['processed'];
+			}
+			$state['status'] = 'running';
+			$state['error'] = '';
+			if ( array() === $rows ) {
+				$total = $wpdb->get_var( "SELECT COUNT(*) FROM {$legacy}" );
+				if ( '' !== $wpdb->last_error || (int) $total !== (int) $state['source_count'] || (int) $state['processed'] !== (int) $state['source_count'] ) {
+					$error = __( 'Der Legacy-Bestand hat sich geändert oder wurde nicht vollständig verarbeitet. Die Quelltabelle bleibt erhalten.', 'ps-stats' );
+					return false;
+				}
+				$state['status'] = 'complete';
+				$completed = true;
+			}
+			// Cursor and aggregates commit together, including on a process crash.
+			if ( false === $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->options} SET option_value=%s WHERE option_name=%s", maybe_serialize( $state ), self::OPTION ) ) ) {
+				$error = __( 'Migrationsfortschritt konnte nicht gespeichert werden.', 'ps-stats' );
+				return false;
+			}
+			return true;
+		}, true );
+		self::clear_cache();
+		if ( ! $success ) {
+			if ( '' !== $error ) {
+				self::fail( $error );
+			} else {
+				self::schedule();
+			}
 			return;
 		}
-
-		if ( false === $wpdb->query( "DROP TABLE {$legacy}" ) ) {
-			self::fail( __( 'Die geprüfte Legacy-Tabelle konnte nicht entfernt werden: ', 'ps-stats' ) . $wpdb->last_error );
-			return;
+		if ( $completed ) {
+			// Keep the source until an administrator explicitly approves its removal.
+			do_action( 'ps_stats_migration_completed', self::state() );
+		} elseif ( 'running' === self::state()['status'] ) {
+			self::schedule();
 		}
+	}
 
-		$state['status'] = 'complete';
-		$state['error']  = '';
-		self::save( $state );
-		do_action( 'ps_stats_migration_completed', $state );
+	public static function delete_legacy(): bool {
+		global $wpdb;
+		if ( ! Database::lock() ) {
+			return false;
+		}
+		try {
+			$state = self::state();
+			if ( 'complete' !== $state['status'] ) {
+				return false;
+			}
+			$table = Database::legacy_table();
+			if ( ! Database::table_exists( $table ) ) {
+				return '' === $wpdb->last_error;
+			}
+			$count = $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" );
+			if ( '' !== $wpdb->last_error || (int) $count !== (int) $state['source_count'] ) {
+				do_action( 'ps_stats_database_error', 'delete_legacy', 'Legacy-Bestand hat sich geändert.' );
+				return false;
+			}
+			return false !== $wpdb->query( "DROP TABLE {$table}" );
+		} finally {
+			Database::unlock();
+		}
 	}
 
 	public static function schedule(): void {
 		if ( ! wp_next_scheduled( Plugin::CRON_MIGRATION ) ) {
-			wp_schedule_single_event( time() + 5, Plugin::CRON_MIGRATION );
+			$result = wp_schedule_single_event( time() + 5, Plugin::CRON_MIGRATION, array(), true );
+			if ( is_wp_error( $result ) ) {
+				self::fail( __( 'Migration konnte nicht eingeplant werden: ', 'ps-stats' ) . $result->get_error_message() );
+			}
 		}
 	}
 
+	private static function defaults(): array {
+		return array( 'status' => 'not_started', 'cursor' => 0, 'processed' => 0, 'source_count' => 0, 'max_id' => 0, 'skipped' => 0, 'error' => '' );
+	}
+
 	public static function state(): array {
-		$defaults = array(
-			'status'       => 'not_started',
-			'cursor'       => 0,
-			'processed'    => 0,
-			'source_count' => 0,
-			'max_id'       => 0,
-			'error'        => '',
-		);
 		$state = get_option( self::OPTION, array() );
-		return wp_parse_args( is_array( $state ) ? $state : array(), $defaults );
+		return array_merge( self::defaults(), is_array( $state ) ? $state : array() );
+	}
+
+	private static function clear_cache(): void {
+		wp_cache_delete( self::OPTION, 'options' );
+		wp_cache_delete( 'alloptions', 'options' );
 	}
 
 	private static function save( array $state ): void {
 		update_option( self::OPTION, $state, false );
+		if ( get_option( self::OPTION ) !== $state ) {
+			throw new \RuntimeException( 'PS Stats: Migrationsstatus konnte nicht gespeichert werden.' );
+		}
 	}
 
 	private static function fail( string $message ): void {
-		$state           = self::state();
+		$state = self::state();
 		$state['status'] = 'failed';
-		$state['error']  = sanitize_text_field( $message );
+		$state['error'] = sanitize_text_field( $message );
 		self::save( $state );
 		do_action( 'ps_stats_migration_failed', $state );
-	}
-
-	private static function valid_date( string $date ): bool {
-		$parsed = \DateTimeImmutable::createFromFormat( '!Y-m-d', $date );
-		return false !== $parsed && $parsed->format( 'Y-m-d' ) === $date;
 	}
 }

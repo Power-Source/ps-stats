@@ -1,0 +1,55 @@
+name: Plugin tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  classicpress:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.0', '8.1', '8.2', '8.3', '8.4']
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test
+          MYSQL_DATABASE: ps_stats_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -ptest"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysqli, mbstring
+          tools: wp-cli
+          coverage: none
+      - name: Syntax and whitespace
+        run: |
+          find src tests inc/psstats-widget inc/extended-evaluation-for-psstats -name '*.php' -print0 | xargs -0 -n1 php -l
+          php -l ps-stats.php
+          node --check inc/extended-evaluation-for-psstats/js/functions.js
+          git diff --check
+      - name: Install ClassicPress 2.7
+        run: |
+          mkdir /tmp/ps-stats-classicpress
+          curl --fail --location https://github.com/ClassicPress/ClassicPress-release/archive/refs/tags/2.7.0.tar.gz | tar -xz --strip-components=1 -C /tmp/ps-stats-classicpress
+          wp --path=/tmp/ps-stats-classicpress config create --dbname=ps_stats_test --dbuser=root --dbpass=test --dbhost=127.0.0.1:3306
+          wp --path=/tmp/ps-stats-classicpress core install --url=http://example.test --title=Tests --admin_user=test --admin_password=local-test-only --admin_email=test@example.test --skip-email
+          ln -s "$GITHUB_WORKSPACE" /tmp/ps-stats-classicpress/wp-content/plugins/ps-stats
+          wp --path=/tmp/ps-stats-classicpress plugin activate ps-stats
+      - name: Isolated regression suites
+        run: |
+          wp --path=/tmp/ps-stats-classicpress --skip-plugins --skip-themes eval-file tests/evaluation.php
+          wp --path=/tmp/ps-stats-classicpress --skip-plugins --skip-themes eval-file tests/storage-privacy.php
+          wp --path=/tmp/ps-stats-classicpress --skip-plugins --skip-themes eval-file tests/marketpress-source.php

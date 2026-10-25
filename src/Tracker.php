@@ -15,15 +15,12 @@ final class Tracker {
 			return;
 		}
 
-		$path     = Normalizer::target_path( $_SERVER['REQUEST_URI'] ?? '/' );
-		$settings = Plugin::settings();
-		foreach ( $settings['excluded_paths'] as $excluded ) {
-			if ( '/' === $excluded || $path === $excluded || str_starts_with( $path, rtrim( $excluded, '/' ) . '/' ) ) {
-				return;
-			}
+		$path = Privacy::route( $_SERVER['REQUEST_URI'] ?? '' );
+		if ( null === $path ) {
+			return;
 		}
 
-		$domain = Normalizer::referrer_domain( $_SERVER['HTTP_REFERER'] ?? '' );
+		$domain = Privacy::referrer( $_SERVER['HTTP_REFERER'] ?? '' );
 		$date   = current_time( 'Y-m-d' );
 		if ( Database::increment( $date, $path, $domain ) ) {
 			do_action( 'ps_stats_view_counted', $date, $path, $domain );
@@ -38,7 +35,7 @@ final class Tracker {
 		if ( 'GET' !== $method || is_admin() || wp_doing_ajax() || wp_doing_cron() ) {
 			return true;
 		}
-		if ( ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST ) || is_feed() || is_robots() || is_trackback() || is_search() || is_404() || is_preview() ) {
+		if ( ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST ) || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || is_feed() || is_robots() || is_trackback() || is_search() || is_404() || is_preview() || is_author() || is_attachment() ) {
 			return true;
 		}
 		if ( Plugin::settings()['skip_logged_in'] && is_user_logged_in() ) {

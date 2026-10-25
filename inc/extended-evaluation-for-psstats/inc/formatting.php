@@ -20,8 +20,8 @@ function eefpsstats_echo_export_button( $filename, $button_id = 'csv-export', $t
 	<a class="page-title-action" href="#" id="<?php echo esc_html( $button_id ); ?>" role="button"><?php esc_html_e( 'Export', 'psstats' ); ?></a>
 	<script type='text/javascript'>
 	jQuery(document).ready(function () {
-		jQuery("#<?php echo esc_html( $button_id ); ?>").click(function () {
-			eefpsstatsTableToCsv.apply(this, [jQuery('#<?php echo esc_html( $table_id ); ?>'), '<?php echo esc_html( $filename ); ?>.csv']);
+		jQuery(<?php echo wp_json_encode( '#' . $button_id ); ?>).on('click', function () {
+			eefpsstatsTableToCsv.apply(this, [jQuery(<?php echo wp_json_encode( '#' . $table_id ); ?>), <?php echo wp_json_encode( $filename . '.csv' ); ?>]);
 		});
 	});
 	</script>
@@ -112,13 +112,8 @@ function eefpsstats_echo_tab_class( $is_active_tab ) {
  * @return boolean true if and only if the given string is a valid date in the YYYY-MM-DD format.
  */
 function eefpsstats_is_valid_date_string( $date ) {
-	if ( 10 !== strlen( $date ) ) {
-		return false;
-	}
-	$year = substr( $date, 0, 4 );
-	$month = substr( $date, 5, 2 );
-	$day = substr( $date, 8, 2 );
-	return checkdate( $month, $day, $year );
+	$parsed = \DateTimeImmutable::createFromFormat( '!Y-m-d', $date );
+	return false !== $parsed && $parsed->format( 'Y-m-d' ) === $date;
 }
 
 /**
@@ -233,8 +228,8 @@ function eefpsstats_get_post_title_from_url( $url ) {
 	if ( '/' === $url ) {
 		return __( 'Home Page', 'psstats' );
 	}
-	$post_id = url_to_postid( $url );
-	return ( 0 === $post_id ) ? esc_url( $url ) : get_the_title( $post_id );
+	$post_id = url_to_postid( \PSStats\Normalizer::local_url( $url ) );
+	return ( 0 === $post_id ) ? $url : get_the_title( $post_id );
 }
 
 /**
@@ -244,7 +239,7 @@ function eefpsstats_get_post_title_from_url( $url ) {
  * @return string the post type or the empty string as fallback.
  */
 function eefpsstats_get_post_type_from_url( $url ) {
-	$post_id = url_to_postid( $url );
+	$post_id = url_to_postid( \PSStats\Normalizer::local_url( $url ) );
 	return ( 0 === $post_id ) ? '' : get_post_type( $post_id );
 }
 
@@ -305,7 +300,7 @@ function eefpsstats_echo_chart_container( $id, $title, $subtitle = '', $legend =
 		<div class="chart-subtitle">
 			<?php echo esc_html( get_bloginfo( 'name' ) . ' ' . $subtitle ); ?>
 		</div>
-		<div id="<?php echo esc_attr( $id ); ?>"></div>
+		<div id="<?php echo esc_attr( $id ); ?>" role="img" aria-label="<?php echo esc_attr( $title . ' – ' . __( 'Werte in der zugehörigen Datentabelle.', 'ps-stats' ) ); ?>"></div>
 		<?php if ( count( $legend ) > 0 ) { ?>
 			<div class="chart-legend">
 				<ol>

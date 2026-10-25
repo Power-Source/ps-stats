@@ -4,8 +4,10 @@ Plugin Name: PSStats Widget: Popular Posts
 Version: 1.3.8
 */
 
-require( 'PSStats_Post.class.php' );
-require( 'PSStats_Posts.class.php' );
+defined( 'ABSPATH' ) || exit;
+
+require_once __DIR__ . '/PSStats_Post.class.php';
+require_once __DIR__ . '/PSStats_Posts.class.php';
 
 define('DEFAULT_AMOUNT', 5);
 define('DEFAULT_POST_TYPE','post');
@@ -25,8 +27,6 @@ class PSStatsWidget extends WP_Widget {
 			$widget_ops
 		);
 		
-		add_shortcode( "psstats-count", "PSStats_Posts::psstats_count_shortcode");
-		add_shortcode( "psstats-count-sum", "PSStats_Posts::psstats_count_sum_shortcode");
 	}
 
 	/*
@@ -130,14 +130,14 @@ class PSStatsWidget extends WP_Widget {
 	function psstats_widget_template($posts) {
 	?>
 			<?php if ( empty($posts) ): ?>
-			<p><?php __( 'There are no posts yet.', 'psstats' ) ?></p>
+			<p><?php esc_html_e( 'There are no posts yet.', 'psstats' ); ?></p>
 			<?php else: ?>
 
 			<ol class="psstats-widget-list">
 				<?php foreach ($posts as $post): ?>
 				<li class="psstats-widget-element">
 					<?php echo do_action( "psstats_widget_before_link", $post); ?>
-					<a class='psstats-widget-link' title='<?php echo $post->post_title ?>' href='<?php echo $post->post_permalink ?>'><?php echo $post->post_title ?></a> <?php if (isset($post->post_suffix)) echo "<span>". $post->post_suffix ."</span>" ?>
+					<a class="psstats-widget-link" title="<?php echo esc_attr( $post->post_title ); ?>" href="<?php echo esc_url( $post->post_permalink ); ?>"><?php echo esc_html( $post->post_title ); ?></a> <?php if ( isset( $post->post_suffix ) ) echo '<span>' . esc_html( $post->post_suffix ) . '</span>'; ?>
 					<?php echo do_action( "psstats_widget_after_link", $post); ?>
 				</li>
 				<?php endforeach; ?>
@@ -223,7 +223,8 @@ function register_psstats_widget() {
 	register_widget( 'PSStatsWidget' );
 }
 add_action( 'widgets_init', 'register_psstats_widget' );
-add_action( 'admin_init', 'requires_psstats_plugin' );
+add_shortcode( 'psstats-count', array( 'PSStats_Posts', 'psstats_count_shortcode' ) );
+add_shortcode( 'psstats-count-sum', array( 'PSStats_Posts', 'psstats_count_sum_shortcode' ) );
 
 /*
  * Get psstats count for post id in themes or shortcode
