@@ -2,7 +2,7 @@
 /**
  * Plugin Name: PS Stats
  * Description: Datenschutzfreundliche, vollständig lokale Seitenaufruf-Statistik für ClassicPress.
- * Version: 2.0.0
+ * Version: 1.0.1
  * Requires PHP: 8.0
  * Author URI:  https://github.com/Power-Source
  * Plugin URI: https://github.com/Power-Source/ps-stats
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PS_STATS_VERSION', '2.0.0' );
+define( 'PS_STATS_VERSION', '1.0.1' );
 define( 'PS_STATS_SCHEMA_VERSION', '2.1.0' );
 define( 'PS_STATS_FILE', __FILE__ );
 define( 'PS_STATS_DIR', __DIR__ );

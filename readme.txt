@@ -1,9 +1,11 @@
 === PS Stats ===
 * Contributors:      DerN3rd
 * Tags:              analytics, dashboard, pageviews, privacy, statistics, stats, visits, web stats, widget
-* Requires CP:       2.7
-* Requires PHP:      8.0
-* Stable tag:        2.0.0
+* Requires at least: 4.9
+* Requires PHP: 8.0
+* Tested up to: 7.1.0
+* ClassicPress: 2.7.4
+* Stable tag:        1.0.1
 * License:           GPLv3 or later
 * License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -61,3 +63,17 @@ Weitere isolierte Suiten: `wp --skip-plugins --skip-themes eval-file tests/stora
 
 ### Unterstützung ###
 Wenn Du Probleme hast oder glaubst, einen Fehler gefunden zu haben (z.B. ein unerwartetes Verhalten), lass uns Bitte eine [Fehlermeldung] (https://github.com/Power-Source/ps-stats/issues) zukommen.
+
+== Changelog ==
+
+= 1.0.1 =
+* Eigenes PS-Stats-Menü und getrennte Einstellungen wiederhergestellt.
+* Auswertungen, Diagramme, Filter, CSV-Export, Widgets und Shortcodes korrigiert und an die aggregierte Speicherung angebunden.
+* Migration, Datenbereinigung und Löschfunktionen abgesichert; bestehende Aufbewahrungswerte bleiben erhalten.
+* Datensparsame Routenregeln und eine optionale Referrer-Erfassung mit Domainfreigabe ergänzt.
+* Vorhandene MarketPress-Statistik als optionale, nur lesende Monatsquelle eingebunden, ohne zusätzliche Shop-Erfassung.
+* Datenschutztexte, Fehlerhinweise, Systemstatus und mobile Darstellung überarbeitet.
+* Regressionstests und eine CI-Konfiguration für PHP 8.0 bis 8.4 ergänzt.
+
+= 1.0.0 =
+* Erstveröffentlichung.
