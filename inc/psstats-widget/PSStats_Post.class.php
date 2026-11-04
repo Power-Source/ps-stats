@@ -1,9 +1,6 @@
 <?php
 
 final class PSStats_Post {
-	public $post_views = 0;
-	public $post_permalink = '';
-	public $post_suffix = '';
 
 	/**
 	 * Post ID.
@@ -202,9 +199,7 @@ final class PSStats_Post {
 	 */
 	public function __construct( $post, $views ) {
 		foreach ( get_object_vars( $post ) as $key => $value ) {
-			if ( property_exists( $this, $key ) ) {
-				$this->$key = $value;
-			}
+			$this->$key = $value;
 		}
 		
 		// Default

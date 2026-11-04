@@ -15,8 +15,8 @@ function eefpsstatsTableToCsv( $table, filename ) {
 					return $cols
 						.map( function ( j, col ) {
 							const $col = jQuery( col ),
-								text = $col.text().trim();
-							return ( /^[=+\-@\t\r]/.test( text ) ? "'" + text : text ).replace( /"/g, '""' );
+								text = $col.text();
+							return text.replace( /"/g, '""' ); // escape double quotes
 						} )
 						.get()
 						.join( tmpColDelim );
@@ -40,7 +40,7 @@ function eefpsstatsColumnChart( id, dataArray ) {
 	const dataMap = new Map( dataArray );
 	const seriesData = [];
 	for ( const [ x, y ] of dataMap.entries() ) {
-		seriesData.push( { meta: jQuery( '<span>' ).text( x ).html(), value: y } );
+		seriesData.push( { meta: x, value: y } );
 	}
 	const data = {
 		labels: Array.from( { length: dataArray.length }, ( x, i ) => i + 1 ),
@@ -101,7 +101,7 @@ function eefpsstatsLineChart( id, dataArray, type = 'default' ) {
 	const dataMap = new Map( dataArray );
 	const seriesData = [];
 	for ( const [ x, y ] of dataMap.entries() ) {
-		seriesData.push( { meta: jQuery( '<span>' ).text( x ).html(), value: y } );
+		seriesData.push( { meta: x, value: y } );
 	}
 	const data = {
 		labels: Array.from( dataMap.keys() ),
@@ -111,8 +111,6 @@ function eefpsstatsLineChart( id, dataArray, type = 'default' ) {
 	const options = {
 		axisX: {
 			showGrid: false,
-			showLabel: type !== 'dashboard',
-			offset: type === 'dashboard' ? 0 : undefined,
 			labelInterpolationFnc( value ) {
 				return type === 'daily'
 					? value.substring( 0, 2 ) === '1.'
@@ -130,7 +128,7 @@ function eefpsstatsLineChart( id, dataArray, type = 'default' ) {
 			bottom: 30,
 			left: 30,
 		},
-		height: type === 'dashboard' ? 140 : 300,
+		height: 300,
 		plugins: [
 			Chartist.plugins.tooltip( {
 				anchorToPoint: true,
@@ -148,9 +146,7 @@ function eefpsstatsLineChart( id, dataArray, type = 'default' ) {
 			} ),
 		],
 		showArea: true,
-		showPoint: true,
-		fullWidth: type === 'dashboard',
-		low: type === 'dashboard' ? 0 : undefined,
+		showPoints: true,
 	};
 
 	new Chartist.Line( id, data, options );
@@ -266,7 +262,7 @@ function eefpsstatsValidateDateRange() {
 		correct =
 			start[ 0 ].validity.valid &&
 			end[ 0 ].validity.valid &&
-			( ( start.val() && end.val() && start.val() <= end.val() ) ||
+			( ( start.val() && end.val() ) ||
 				( ! start.val() && ! end.val() ) );
-	start.closest( 'form' ).find( 'button' ).prop( 'disabled', ! correct );
+	jQuery( 'form button' ).prop( 'disabled', ! correct );
 }

@@ -29,14 +29,14 @@ if ( isset( $_POST['start'], $_POST['end'] ) && check_admin_referer( 'referrers'
 	if ( '' !== $start || '' !== $end ) {
 		$valid_start = eefpsstats_is_valid_date_string( $start );
 		$valid_end = eefpsstats_is_valid_date_string( $end );
-		if ( ! $valid_start || ! $valid_end || $start > $end ) {
+		if ( ! $valid_start || ! $valid_end ) {
 			// Error message if at least one date is not valid.
 			$message = __( 'No valid date period set. Please enter a valid start and a valid end date!', 'psstats' );
 		}
 	}
 }
 
-$referrers = '' === $message ? eefpsstats_get_views_for_all_referrers( $selected_post, $start, $end ) : array();
+$referrers = eefpsstats_get_views_for_all_referrers( $selected_post, $start, $end );
 $referrers_for_diagram = array_slice( $referrers, 0, 24, true );
 
 $filename = eefpsstats_get_filename(
@@ -46,7 +46,7 @@ $filename = eefpsstats_get_filename(
 );
 ?>
 <div class="wrap eefpsstats">
-	<h1><?php esc_html_e( 'PS Stats', 'ps-stats' ); ?>
+	<h1><?php esc_html_e( 'PSStats – Extended Evaluation', 'psstats' ); ?>
 			&rsaquo; <?php esc_html_e( 'Referrers from other websites', 'psstats' ); ?></h1>
 	<?php if ( '' !== $message ) { ?>
 	<div class="notice notice-error">
@@ -62,10 +62,6 @@ $filename = eefpsstats_get_filename(
 			<button type="submit" class="button-secondary"><?php esc_html_e( 'Select post/page', 'psstats' ); ?></button>
 		</fieldset>
 	</form>
-<?php if ( '' !== $message ) { ?>
-</div>
-	<?php return; ?>
-<?php } ?>
 <?php if ( count( $referrers ) === 0 ) { ?>
 	<p><?php esc_html_e( 'No data available.', 'psstats' ); ?></p>
 <?php } else { ?>

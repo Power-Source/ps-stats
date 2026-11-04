@@ -19,6 +19,7 @@ final class AdminPage {
 		add_action( 'admin_menu', array( self::class, 'menu' ) );
 		add_action( 'admin_menu', array( self::class, 'redirect_legacy_page' ), 1 );
 		add_action( 'admin_post_ps_stats_save', array( self::class, 'save_settings' ) );
+		add_action( 'admin_post_ps_stats_dashboard_save', array( self::class, 'save_dashboard_settings' ) );
 		add_action( 'admin_post_ps_stats_delete_before', array( self::class, 'delete_before' ) );
 		add_action( 'admin_post_ps_stats_delete_referrers', array( self::class, 'delete_referrers' ) );
 		add_action( 'admin_post_ps_stats_delete_all', array( self::class, 'delete_all' ) );
@@ -81,8 +82,6 @@ final class AdminPage {
 		if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'see_psstats_evaluation' ) ) {
 			wp_die( esc_html__( 'Du hast keine Berechtigung für diese Aktion.', 'ps-stats' ), 403 );
 		}
-		$today    = current_time( 'Y-m-d' );
-		$overview = self::overview( $today );
 		?>
 		<div class="wrap ps-stats">
 			<h1><?php esc_html_e( 'PS Stats', 'ps-stats' ); ?></h1>
@@ -102,18 +101,6 @@ final class AdminPage {
 					</p>
 				</div>
 			<?php endif; ?>
-			<p><?php esc_html_e( 'PS Stats zählt ausschließlich Seitenaufrufe auf dieser Website. Es werden keine Personen oder Sitzungen verfolgt.', 'ps-stats' ); ?></p>
-
-			<h2><?php esc_html_e( 'Übersicht', 'ps-stats' ); ?></h2>
-			<table class="widefat striped" style="max-width:900px">
-				<tbody>
-					<tr><th><?php esc_html_e( 'Aufrufe heute', 'ps-stats' ); ?></th><td><?php echo esc_html( number_format_i18n( $overview['today'] ) ); ?></td></tr>
-					<tr><th><?php esc_html_e( 'Aufrufe insgesamt', 'ps-stats' ); ?></th><td><?php echo esc_html( number_format_i18n( $overview['total'] ) ); ?></td></tr>
-					<tr><th><?php esc_html_e( 'Erfasste Zielpfade', 'ps-stats' ); ?></th><td><?php echo esc_html( number_format_i18n( $overview['paths'] ) ); ?></td></tr>
-					<tr><th><?php esc_html_e( 'Externe Referrer-Domains', 'ps-stats' ); ?></th><td><?php echo esc_html( number_format_i18n( $overview['domains'] ) ); ?></td></tr>
-				</tbody>
-			</table>
-
 			<?php Evaluation::render( 'dashboard' ); ?>
 		</div>
 		<?php
@@ -122,6 +109,7 @@ final class AdminPage {
 	public static function render_settings(): void {
 		self::guard();
 		$settings = Plugin::settings();
+		$dashboard = DashboardWidget::settings();
 		$bounds = Provider::instance()->date_bounds();
 		$migration = Migration::state();
 		$next_cleanup = wp_next_scheduled( Plugin::CRON_CLEANUP );
@@ -129,42 +117,6 @@ final class AdminPage {
 		<div class="wrap ps-stats">
 			<h1><?php esc_html_e( 'PS Stats – Einstellungen', 'ps-stats' ); ?></h1>
 			<?php self::notice(); ?>
-			<?php Status::render(); ?>
-			<div class="notice notice-info inline"><p><?php esc_html_e( 'Datensparsame Erfassung: Nur die Startseite und kanonische, veröffentlichte öffentliche Einzelinhalte ohne Passwort werden neu gezählt. Unbekannte dynamische Routen, Autoren-/Mitgliederseiten und typische Konto-, Bestell-, Checkout-, Nachrichten- und Download-Pfade werden ausgeschlossen. Eigene sensible öffentliche Inhalte müssen zusätzlich ausgeschlossen werden. Bestehende Daten werden nicht automatisch umgeschrieben.', 'ps-stats' ); ?></p></div>
-			<h2><?php esc_html_e( 'Migration', 'ps-stats' ); ?></h2>
-			<p>
-				<?php
-				echo esc_html(
-					sprintf(
-						/* translators: 1: status, 2: processed rows, 3: source rows. */
-						__( 'Status: %1$s — %2$d von %3$d Legacy-Zeilen verarbeitet.', 'ps-stats' ),
-						self::status_label( $migration['status'] ),
-						$migration['processed'],
-						$migration['source_count']
-					)
-				);
-				?>
-			</p>
-			<?php if ( $migration['error'] ) : ?>
-				<div class="notice notice-error inline"><p><?php echo esc_html( $migration['error'] ); ?></p></div>
-			<?php endif; ?>
-			<?php if ( 'complete' === $migration['status'] && Database::table_exists( Database::legacy_table() ) ) : ?>
-				<div class="notice notice-warning inline"><p><?php esc_html_e( 'Die alte Quelltabelle ist noch vorhanden und kann vollständige Referrer oder sensible Pfade enthalten. Nach Prüfung der Migration ausdrücklich löschen; auch Sicherungskopien separat berücksichtigen.', 'ps-stats' ); ?></p></div>
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-					<input type="hidden" name="action" value="ps_stats_delete_legacy">
-					<?php wp_nonce_field( 'ps_stats_delete_legacy' ); ?>
-					<label><input type="checkbox" name="confirm" value="1" required> <?php esc_html_e( 'Migration geprüft; alte Quelltabelle unwiderruflich entfernen.', 'ps-stats' ); ?></label>
-					<?php submit_button( __( 'Alte Quelltabelle löschen', 'ps-stats' ), 'secondary', 'submit', false ); ?>
-				</form>
-			<?php endif; ?>
-			<?php if ( in_array( $migration['status'], array( 'pending', 'running', 'failed' ), true ) ) : ?>
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-					<input type="hidden" name="action" value="ps_stats_resume_migration">
-					<?php wp_nonce_field( 'ps_stats_resume_migration' ); ?>
-					<?php submit_button( __( 'Migration fortsetzen', 'ps-stats' ), 'secondary', 'submit', false ); ?>
-				</form>
-			<?php endif; ?>
-
 			<h2><?php esc_html_e( 'Einstellungen', 'ps-stats' ); ?></h2>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="ps_stats_save">
@@ -207,6 +159,71 @@ final class AdminPage {
 				<?php submit_button( __( 'Einstellungen speichern', 'ps-stats' ) ); ?>
 			</form>
 
+			<h2><?php esc_html_e( 'Dashboard-Widget', 'ps-stats' ); ?></h2>
+			<p><?php esc_html_e( 'Diese Optionen steuern Zeitraum, Ranglisten und Summen im PS-Stats-Widget auf dem Dashboard. Du kannst dieselben Werte auch direkt über „Konfigurieren“ am Widget ändern.', 'ps-stats' ); ?></p>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="ps_stats_dashboard_save">
+				<?php wp_nonce_field( 'ps_stats_dashboard_save' ); ?>
+				<table class="form-table"><tbody>
+					<tr>
+						<th><label for="ps-stats-dashboard-days"><?php esc_html_e( 'Angezeigter Zeitraum', 'ps-stats' ); ?></label></th>
+						<td><input id="ps-stats-dashboard-days" type="number" name="days_show" min="1" max="3650" value="<?php echo esc_attr( $dashboard['days_show'] ); ?>" required> <?php esc_html_e( 'Tage', 'ps-stats' ); ?>
+							<p class="description"><?php esc_html_e( 'Wie viele tägliche Werte das Diagramm im Dashboard zeigt.', 'ps-stats' ); ?></p></td>
+					</tr>
+					<tr>
+						<th><label for="ps-stats-dashboard-limit"><?php esc_html_e( 'Einträge je Top-Liste', 'ps-stats' ); ?></label></th>
+						<td><input id="ps-stats-dashboard-limit" type="number" name="limit" min="1" max="100" value="<?php echo esc_attr( $dashboard['limit'] ); ?>" required>
+							<p class="description"><?php esc_html_e( 'Maximale Anzahl häufigster Inhalte und Referrer im Dashboard-Widget.', 'ps-stats' ); ?></p></td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'Zeitraum der Top-Listen', 'ps-stats' ); ?></th>
+						<td><label><input type="checkbox" name="today" value="1" <?php checked( $dashboard['today'] ); ?>> <?php esc_html_e( 'Top-Listen nur für heute anzeigen', 'ps-stats' ); ?></label></td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'Summen', 'ps-stats' ); ?></th>
+						<td><label><input type="checkbox" name="show_totals" value="1" <?php checked( $dashboard['show_totals'] ); ?>> <?php esc_html_e( 'Heute und Gesamtzahl im Dashboard-Widget anzeigen', 'ps-stats' ); ?></label></td>
+					</tr>
+				</tbody></table>
+				<?php submit_button( __( 'Widget-Einstellungen speichern', 'ps-stats' ) ); ?>
+			</form>
+
+			<details class="ps-stats-advanced">
+				<summary><?php esc_html_e( 'Systemstatus, Migration und Datenpflege', 'ps-stats' ); ?></summary>
+				<?php Status::render(); ?>
+				<div class="notice notice-info inline"><p><?php esc_html_e( 'Datensparsame Erfassung: Nur die Startseite und kanonische, veröffentlichte öffentliche Einzelinhalte ohne Passwort werden neu gezählt. Unbekannte dynamische Routen, Autoren-/Mitgliederseiten und typische Konto-, Bestell-, Checkout-, Nachrichten- und Download-Pfade werden ausgeschlossen. Eigene sensible öffentliche Inhalte müssen zusätzlich ausgeschlossen werden. Bestehende Daten werden nicht automatisch umgeschrieben.', 'ps-stats' ); ?></p></div>
+				<h2><?php esc_html_e( 'Migration', 'ps-stats' ); ?></h2>
+				<p>
+					<?php
+					echo esc_html(
+						sprintf(
+							/* translators: 1: status, 2: processed rows, 3: source rows. */
+							__( 'Status: %1$s — %2$d von %3$d Legacy-Zeilen verarbeitet.', 'ps-stats' ),
+							self::status_label( $migration['status'] ),
+							$migration['processed'],
+							$migration['source_count']
+						)
+					);
+					?>
+				</p>
+				<?php if ( $migration['error'] ) : ?>
+					<div class="notice notice-error inline"><p><?php echo esc_html( $migration['error'] ); ?></p></div>
+				<?php endif; ?>
+				<?php if ( 'complete' === $migration['status'] && Database::table_exists( Database::legacy_table() ) ) : ?>
+					<div class="notice notice-warning inline"><p><?php esc_html_e( 'Die alte Quelltabelle ist noch vorhanden und kann vollständige Referrer oder sensible Pfade enthalten. Nach Prüfung der Migration ausdrücklich löschen; auch Sicherungskopien separat berücksichtigen.', 'ps-stats' ); ?></p></div>
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+						<input type="hidden" name="action" value="ps_stats_delete_legacy">
+						<?php wp_nonce_field( 'ps_stats_delete_legacy' ); ?>
+						<label><input type="checkbox" name="confirm" value="1" required> <?php esc_html_e( 'Migration geprüft; alte Quelltabelle unwiderruflich entfernen.', 'ps-stats' ); ?></label>
+						<?php submit_button( __( 'Alte Quelltabelle löschen', 'ps-stats' ), 'secondary', 'submit', false ); ?>
+					</form>
+				<?php endif; ?>
+				<?php if ( in_array( $migration['status'], array( 'pending', 'running', 'failed' ), true ) ) : ?>
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+						<input type="hidden" name="action" value="ps_stats_resume_migration">
+						<?php wp_nonce_field( 'ps_stats_resume_migration' ); ?>
+						<?php submit_button( __( 'Migration fortsetzen', 'ps-stats' ), 'secondary', 'submit', false ); ?>
+					</form>
+				<?php endif; ?>
 			<h2><?php esc_html_e( 'Datenpflege', 'ps-stats' ); ?></h2>
 			<p>
 				<?php
@@ -219,6 +236,7 @@ final class AdminPage {
 
 			<h2><?php esc_html_e( 'Datenschutz und Datenumfang', 'ps-stats' ); ?></h2>
 			<?php echo wpautop( esc_html( Privacy::text() ) ); ?>
+			</details>
 		</div>
 		<?php
 	}
@@ -275,6 +293,24 @@ final class AdminPage {
 		self::redirect( 'saved' );
 	}
 
+	public static function save_dashboard_settings(): void {
+		self::verify( 'ps_stats_dashboard_save' );
+		$days = isset( $_POST['days_show'] ) && is_scalar( $_POST['days_show'] ) ? filter_var( $_POST['days_show'], FILTER_VALIDATE_INT ) : false;
+		$limit = isset( $_POST['limit'] ) && is_scalar( $_POST['limit'] ) ? filter_var( $_POST['limit'], FILTER_VALIDATE_INT ) : false;
+		if ( false === $days || $days < 1 || $days > 3650 || false === $limit || $limit < 1 || $limit > 100 ) {
+			self::redirect( 'invalid_dashboard_settings', true );
+		}
+		$saved = DashboardWidget::update_settings(
+			array(
+				'days_show' => $days,
+				'limit' => $limit,
+				'today' => isset( $_POST['today'] ),
+				'show_totals' => isset( $_POST['show_totals'] ),
+			)
+		);
+		self::redirect( $saved ? 'dashboard_settings_saved' : 'db_error', ! $saved );
+	}
+
 	public static function delete_before(): void {
 		self::verify_destructive( 'ps_stats_delete_before' );
 		$date = isset( $_POST['before_date'] ) ? sanitize_text_field( wp_unslash( $_POST['before_date'] ) ) : '';
@@ -308,26 +344,6 @@ final class AdminPage {
 		self::verify_destructive( 'ps_stats_delete_legacy' );
 		$success = Migration::delete_legacy();
 		self::redirect( $success ? 'legacy_deleted' : 'db_error', ! $success );
-	}
-
-	private static function overview( string $today ): array {
-		global $wpdb;
-		$table = Database::table();
-		$row = $wpdb->get_row(
-			$wpdb->prepare(
-				"SELECT COALESCE(SUM(view_count),0) AS total,
-				COALESCE(SUM(CASE WHEN stat_date=%s THEN view_count ELSE 0 END),0) AS today,
-				COUNT(DISTINCT target_path) AS paths,
-				COUNT(DISTINCT NULLIF(referrer_domain,'')) AS domains FROM {$table}",
-				$today
-			),
-			ARRAY_A
-		);
-		if ( '' !== $wpdb->last_error ) {
-			do_action( 'ps_stats_database_error', 'overview', $wpdb->last_error );
-			wp_die( esc_html__( 'Die Statistikübersicht konnte nicht geladen werden.', 'ps-stats' ), 500 );
-		}
-		return array_map( 'intval', is_array( $row ) ? $row : array( 'total' => 0, 'today' => 0, 'paths' => 0, 'domains' => 0 ) );
 	}
 
 	private static function destructive_forms(): void {
@@ -381,6 +397,7 @@ final class AdminPage {
 		$key = sanitize_key( wp_unslash( $_GET['ps_stats_notice'] ) );
 		$messages = array(
 			'saved' => __( 'Einstellungen gespeichert.', 'ps-stats' ),
+			'dashboard_settings_saved' => __( 'Dashboard-Widget-Einstellungen gespeichert.', 'ps-stats' ),
 			'deleted_before' => __( 'Ältere Statistikdaten wurden gelöscht.', 'ps-stats' ),
 			'referrers_deleted' => __( 'Alle Referrer-Daten wurden gelöscht.', 'ps-stats' ),
 			'all_deleted' => __( 'Alle Statistikdaten wurden gelöscht.', 'ps-stats' ),
@@ -390,6 +407,7 @@ final class AdminPage {
 			'confirmation_required' => __( 'Die ausdrückliche Bestätigung fehlt.', 'ps-stats' ),
 			'legacy_deleted' => __( 'Alte Quelltabelle gelöscht.', 'ps-stats' ),
 			'invalid_settings' => __( 'Ungültige Einstellungen. Bitte Aufbewahrung und Domain-Freigaben prüfen. Es wurde nichts gespeichert.', 'ps-stats' ),
+			'invalid_dashboard_settings' => __( 'Ungültige Widget-Einstellungen. Bitte Zeitraum (1–3650 Tage) und Top-Liste (1–100 Einträge) prüfen. Es wurde nichts gespeichert.', 'ps-stats' ),
 			'retention_confirmation_required' => __( 'Die kürzere Aufbewahrung wurde nicht gespeichert: Bitte die automatische Löschung ausdrücklich bestätigen.', 'ps-stats' ),
 		);
 		if ( isset( $messages[ $key ] ) ) {

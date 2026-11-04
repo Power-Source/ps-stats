@@ -21,8 +21,8 @@ final class Evaluation {
 			'ps-stats-evaluation',
 			'eefpsstats_translations',
 			array(
-				'view'  => __( 'View', 'psstats' ),
-				'views' => __( 'Views', 'psstats' ),
+				'view'  => __( 'Aufruf', 'ps-stats' ),
+				'views' => __( 'Aufrufe', 'ps-stats' ),
 			)
 		);
 	}

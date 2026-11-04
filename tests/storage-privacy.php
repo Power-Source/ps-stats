@@ -13,6 +13,7 @@ use PSStats\Plugin;
 use PSStats\Privacy;
 use PSStats\Tracker;
 use PSStats\Integration\MarketPress;
+use PSStats\Admin\DashboardWidget;
 
 global $wpdb;
 $check = static function ( bool $condition, string $message ): void {
@@ -154,6 +155,17 @@ try {
 	$check( get_psstats_count_sum() === 9, 'Compatibility sum has an off-by-one error.' );
 	$check( get_psstats_count( $post_id ) === 9, 'Compatibility post count mismatch.' );
 	$check( count( PSStats_Posts::get_posts( 'post', 0, 5, 0 ) ) === 1, 'Popular widget fixture missing.' );
+	delete_option( 'ps_stats_dashboard' );
+	update_option( 'psstats', array( 'days_show' => 180, 'limit' => 12, 'today' => 1, 'show_totals' => 0 ), false );
+	$check(
+		DashboardWidget::settings() === array( 'days_show' => 180, 'limit' => 12, 'today' => true, 'show_totals' => false ),
+		'Legacy Dashboard widget settings were not restored.'
+	);
+	$check(
+		DashboardWidget::update_settings( array( 'days_show' => 365, 'limit' => 25, 'today' => false, 'show_totals' => true ) )
+		&& DashboardWidget::settings() === array( 'days_show' => 365, 'limit' => 25, 'today' => false, 'show_totals' => true ),
+		'Dashboard widget display settings did not persist.'
+	);
 	$check( str_contains( do_shortcode( '[psstats-count-sum]' ), '9' ), 'Sum shortcode did not render.' );
 	$check( has_action( 'mp_checkout/product_sale', array( MarketPress::class, 'record_product_sale' ) ) === false, 'PS Stats must not duplicate sales tracking.' );
 	$check( has_action( 'mp_serve_download', array( MarketPress::class, 'record_download' ) ) === false, 'PS Stats must not duplicate download tracking.' );
