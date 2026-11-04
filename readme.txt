@@ -1,9 +1,9 @@
 === PS Stats ===
 * Contributors: DerN3rd
 * Tags: analytics, dashboard, pageviews, privacy, statistics, stats, visits, web stats, widget
-* Requires at least: 4.9
+* Requires CP: 2.7
 * Requires PHP: 8.0
-* Tested up to: 7.1.0
+* Tested up to: 7.1.4
 * ClassicPress: 2.7.4
 * Stable tag: 1.0.1
 * License: GPLv3 or later
