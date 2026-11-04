@@ -9,12 +9,14 @@ final class Evaluation {
 
 	public static function assets(): void {
 		$base = plugins_url( self::DIRECTORY, PS_STATS_FILE );
+		$script_path = PS_STATS_DIR . self::DIRECTORY . 'js/functions.js';
+		$script_version = file_exists( $script_path ) ? (string) filemtime( $script_path ) : PS_STATS_VERSION;
 		wp_enqueue_style( 'ps-stats-chartist', $base . 'lib/chartist.min.css', array(), PS_STATS_VERSION );
 		wp_enqueue_style( 'ps-stats-tooltip', $base . 'lib/chartist-plugin-tooltip.min.css', array( 'ps-stats-chartist' ), PS_STATS_VERSION );
 		wp_enqueue_style( 'ps-stats-evaluation', $base . 'css/style.css', array( 'ps-stats-tooltip' ), PS_STATS_VERSION );
 		wp_enqueue_script( 'ps-stats-chartist', $base . 'lib/chartist.min.js', array(), PS_STATS_VERSION );
 		wp_enqueue_script( 'ps-stats-tooltip', $base . 'lib/chartist-plugin-tooltip.min.js', array( 'ps-stats-chartist', 'jquery' ), PS_STATS_VERSION );
-		wp_enqueue_script( 'ps-stats-evaluation', $base . 'js/functions.js', array( 'ps-stats-tooltip' ), PS_STATS_VERSION );
+		wp_enqueue_script( 'ps-stats-evaluation', $base . 'js/functions.js', array( 'ps-stats-tooltip' ), $script_version );
 		wp_localize_script(
 			'ps-stats-evaluation',
 			'eefpsstats_translations',

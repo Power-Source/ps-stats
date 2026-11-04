@@ -13,6 +13,14 @@ final class DashboardWidget {
 		}
 		wp_add_dashboard_widget( 'psstats_dashboard', 'PS Stats', array( self::class, 'render' ), array( self::class, 'configure' ) );
 		Evaluation::assets();
+		$style_path = PS_STATS_DIR . '/css/dashboard.css';
+		$style_version = file_exists( $style_path ) ? (string) filemtime( $style_path ) : PS_STATS_VERSION;
+		wp_enqueue_style(
+			'ps-stats-dashboard',
+			plugins_url( 'css/dashboard.css', PS_STATS_FILE ),
+			array( 'ps-stats-evaluation' ),
+			$style_version
+		);
 	}
 
 	private static function settings(): array {
@@ -72,30 +80,59 @@ final class DashboardWidget {
 		}
 		?>
 		<div class="eefpsstats">
-			<h3><?php echo esc_html( sprintf( __( 'Seitenaufrufe der letzten %d Tage', 'ps-stats' ), $settings['days_show'] ) ); ?></h3>
-			<div id="ps-stats-dashboard-chart" role="img" aria-label="<?php esc_attr_e( 'Aufrufe pro Tag; die Werte stehen in der folgenden Tabelle.', 'ps-stats' ); ?>"></div>
-			<script>jQuery(function () { eefpsstatsLineChart('#ps-stats-dashboard-chart', <?php echo wp_json_encode( $data, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>); });</script>
-			<details><summary><?php esc_html_e( 'Tageswerte anzeigen', 'ps-stats' ); ?></summary>
-			<table class="widefat striped"><caption class="screen-reader-text"><?php esc_html_e( 'Aufrufe pro Tag', 'ps-stats' ); ?></caption>
-				<thead><tr><th scope="col"><?php esc_html_e( 'Datum', 'ps-stats' ); ?></th><th scope="col"><?php esc_html_e( 'Aufrufe', 'ps-stats' ); ?></th></tr></thead>
-				<tbody><?php foreach ( $data as $row ) : ?><tr><th scope="row"><?php echo esc_html( $row[0] ); ?></th><td><?php echo esc_html( number_format_i18n( $row[1] ) ); ?></td></tr><?php endforeach; ?></tbody>
-			</table></details>
-			<?php foreach ( array(
-				array( __( 'Häufigste Inhalte', 'ps-stats' ), $provider->landing_page_stats( $ranking_from, $today ), 'path' ),
-				array( __( 'Externe Referrer', 'ps-stats' ), $provider->referrer_stats( $ranking_from, $today ), 'domain' ),
-			) as $ranking ) : ?>
-				<h3><?php echo esc_html( $ranking[0] ); ?></h3>
-				<ol><?php foreach ( array_slice( $ranking[1], 0, $settings['limit'] ) as $row ) : ?><li><?php echo esc_html( $row[ $ranking[2] ] . ': ' . number_format_i18n( $row['views'] ) ); ?></li><?php endforeach; ?></ol>
-				<?php if ( ! $ranking[1] ) : ?><p><?php esc_html_e( 'Noch keine Daten.', 'ps-stats' ); ?></p><?php endif; ?>
-			<?php endforeach; ?>
+			<h3 class="ps-stats-widget-title"><?php echo esc_html( sprintf( __( 'Seitenaufrufe der letzten %d Tage', 'ps-stats' ), $settings['days_show'] ) ); ?></h3>
+			<div id="psstats_chart" role="img" aria-label="<?php esc_attr_e( 'Aufrufe pro Tag; die Werte stehen in der folgenden Tabelle.', 'ps-stats' ); ?>"></div>
+			<script>jQuery(function () { eefpsstatsLineChart('#psstats_chart', <?php echo wp_json_encode( $data, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>, 'dashboard'); });</script>
+			<details class="ps-stats-chart-details"><summary><?php esc_html_e( 'Tageswerte anzeigen', 'ps-stats' ); ?></summary>
+				<table class="widefat striped"><caption class="screen-reader-text"><?php esc_html_e( 'Aufrufe pro Tag', 'ps-stats' ); ?></caption>
+					<thead><tr><th scope="col"><?php esc_html_e( 'Datum', 'ps-stats' ); ?></th><th scope="col"><?php esc_html_e( 'Aufrufe', 'ps-stats' ); ?></th></tr></thead>
+					<tbody><?php foreach ( $data as $row ) : ?><tr><th scope="row"><?php echo esc_html( $row[0] ); ?></th><td><?php echo esc_html( number_format_i18n( $row[1] ) ); ?></td></tr><?php endforeach; ?></tbody>
+				</table>
+			</details>
+			<?php
+			$content = array_values( array_filter(
+				$provider->landing_page_stats( $ranking_from, $today ),
+				static fn ( array $row ): bool => null !== \PSStats\Privacy::route( $row['path'] )
+			) );
+			$referrers = $provider->referrer_stats( $ranking_from, $today );
+			?>
+			<div class="table target">
+				<p class="sub"><?php esc_html_e( 'Häufigste Inhalte', 'ps-stats' ); ?></p>
+				<div><table>
+					<?php foreach ( array_slice( $content, 0, $settings['limit'] ) as $row ) : ?>
+						<tr>
+							<td class="b"><?php echo esc_html( number_format_i18n( $row['views'] ) ); ?></td>
+							<td><a href="<?php echo esc_url( \PSStats\Normalizer::local_url( $row['path'] ) ); ?>"><?php echo esc_html( $row['path'] ); ?></a></td>
+						</tr>
+					<?php endforeach; ?>
+				</table></div>
+				<?php if ( ! $content ) : ?><p class="ps-stats-empty"><?php esc_html_e( 'Noch keine geeigneten Inhalte im gewählten Zeitraum.', 'ps-stats' ); ?></p><?php endif; ?>
+			</div>
+			<div class="table referrer">
+				<p class="sub"><?php esc_html_e( 'Externe Referrer', 'ps-stats' ); ?></p>
+				<div><table>
+					<?php foreach ( array_slice( $referrers, 0, $settings['limit'] ) as $row ) : ?>
+						<tr>
+							<td class="b"><?php echo esc_html( number_format_i18n( $row['views'] ) ); ?></td>
+							<td><a href="<?php echo esc_url( 'https://' . $row['domain'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $row['domain'] ); ?></a></td>
+						</tr>
+					<?php endforeach; ?>
+				</table></div>
+				<?php if ( ! $referrers ) : ?><p class="ps-stats-empty"><?php esc_html_e( 'Noch keine freigegebenen Referrer im gewählten Zeitraum.', 'ps-stats' ); ?></p><?php endif; ?>
+			</div>
 			<?php if ( $settings['show_totals'] ) :
 				$bounds = $provider->date_bounds();
 				$all = $provider->daily_visits( $bounds['oldest'] ?: $today, max( $bounds['newest'] ?: $today, $today ) );
 				?>
-				<p><?php echo esc_html( sprintf( __( 'Heute: %1$s · Insgesamt: %2$s', 'ps-stats' ), number_format_i18n( $values[ $today ] ?? 0 ), number_format_i18n( array_sum( array_column( $all, 'views' ) ) ) ) ); ?></p>
+				<div class="table total"><table><tr>
+					<td class="b"><?php echo esc_html( number_format_i18n( $values[ $today ] ?? 0 ) ); ?></td>
+					<td><?php esc_html_e( 'Heute', 'ps-stats' ); ?></td>
+					<td class="b"><?php echo esc_html( number_format_i18n( array_sum( array_column( $all, 'views' ) ) ) ); ?></td>
+					<td><?php esc_html_e( 'Insgesamt', 'ps-stats' ); ?></td>
+				</tr></table></div>
 			<?php endif; ?>
 			<?php if ( current_user_can( 'manage_options' ) || current_user_can( 'see_psstats_evaluation' ) ) : ?>
-				<p><a href="<?php echo esc_url( admin_url( 'admin.php?page=ps-stats' ) ); ?>"><?php esc_html_e( 'Vollständige Auswertung öffnen', 'ps-stats' ); ?></a></p>
+				<p class="meta-links"><a href="<?php echo esc_url( admin_url( 'admin.php?page=ps-stats' ) ); ?>"><?php esc_html_e( 'Vollständige Auswertung öffnen', 'ps-stats' ); ?></a></p>
 			<?php endif; ?>
 		</div>
 		<?php

@@ -111,6 +111,8 @@ function eefpsstatsLineChart( id, dataArray, type = 'default' ) {
 	const options = {
 		axisX: {
 			showGrid: false,
+			showLabel: type !== 'dashboard',
+			offset: type === 'dashboard' ? 0 : undefined,
 			labelInterpolationFnc( value ) {
 				return type === 'daily'
 					? value.substring( 0, 2 ) === '1.'
@@ -128,7 +130,7 @@ function eefpsstatsLineChart( id, dataArray, type = 'default' ) {
 			bottom: 30,
 			left: 30,
 		},
-		height: 300,
+		height: type === 'dashboard' ? 140 : 300,
 		plugins: [
 			Chartist.plugins.tooltip( {
 				anchorToPoint: true,
@@ -146,7 +148,9 @@ function eefpsstatsLineChart( id, dataArray, type = 'default' ) {
 			} ),
 		],
 		showArea: true,
-		showPoints: true,
+		showPoint: true,
+		fullWidth: type === 'dashboard',
+		low: type === 'dashboard' ? 0 : undefined,
 	};
 
 	new Chartist.Line( id, data, options );

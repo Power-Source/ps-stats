@@ -69,6 +69,47 @@
 	position: relative;
 }
 
+#psstats_dashboard .eefpsstats {
+	display: flex;
+	flex: 1 1 100%;
+	flex-wrap: wrap;
+	min-width: 0;
+	padding: 0 12px 12px;
+}
+
+#psstats_dashboard .ps-stats-widget-title,
+#psstats_dashboard .ps-stats-chart-details {
+	flex: 0 0 100%;
+}
+
+#psstats_dashboard .ps-stats-widget-title {
+	margin: 12px 0 0;
+	font-size: 13px;
+	font-weight: 400;
+}
+
+#psstats_dashboard #psstats_chart {
+	flex: 0 0 100%;
+	min-width: 0;
+	margin: 0;
+}
+
+#psstats_dashboard #psstats_chart .ct-label.ct-horizontal {
+	display: none;
+}
+
+#psstats_dashboard #psstats_chart .ct-point {
+	stroke-width: 1.5px;
+}
+
+#psstats_dashboard .ps-stats-chart-details {
+	margin: 2px 0 8px;
+}
+
+#psstats_dashboard .ps-stats-chart-details table {
+	margin-top: 8px;
+}
+
 #psstats_dashboard.closed .inside {
 	display: none;
 }
@@ -88,11 +129,34 @@
 
 #psstats_dashboard .table.referrer,
 #psstats_dashboard .table.target {
-	flex: 1 0 50%;
+	flex: 1 1 50%;
+	min-width: 0;
 }
 
 #psstats_dashboard .table.total {
 	flex: 0 0 100%;
+}
+
+#psstats_dashboard .table table {
+	width: 100%;
+	table-layout: fixed;
+}
+
+#psstats_dashboard .table td.t,
+#psstats_dashboard .table td:not(.b) {
+	overflow-wrap: anywhere;
+}
+
+#psstats_dashboard .table td:not(.b) a {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+#psstats_dashboard .ps-stats-empty {
+	color: #646970;
+	margin: 8px 0 0;
 }
 
 #psstats_dashboard td {
@@ -126,9 +190,17 @@
 }
 
 #psstats_dashboard .meta-links {
-	float: right;
+	flex: 0 0 100%;
 	margin: 0;
 	line-height: 28px;
+	text-align: right;
+}
+
+@media screen and (max-width: 782px) {
+	#psstats_dashboard .table.referrer,
+	#psstats_dashboard .table.target {
+		flex-basis: 100%;
+	}
 }
 
 /* @end group */
