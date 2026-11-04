@@ -53,3 +53,4 @@ jobs:
           wp --path=/tmp/ps-stats-classicpress --skip-plugins --skip-themes eval-file tests/evaluation.php
           wp --path=/tmp/ps-stats-classicpress --skip-plugins --skip-themes eval-file tests/storage-privacy.php
           wp --path=/tmp/ps-stats-classicpress --skip-plugins --skip-themes eval-file tests/marketpress-source.php
+          wp --path=/tmp/ps-stats-classicpress --skip-plugins --skip-themes eval-file tests/widget-output.php

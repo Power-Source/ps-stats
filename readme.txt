@@ -59,7 +59,7 @@ Das Dashboard-Widget, das Frontend-Widget „PS-Stats Widget“, die Shortcodes 
 ### Entwicklung ###
 Die Auswertung kann mit `wp --skip-plugins --skip-themes eval-file tests/evaluation.php` geprüft werden. Die Tests verwenden eine verbindungslokale temporäre Statistiktabelle; bestehende Statistikdaten bleiben unverändert.
 
-Weitere isolierte Suiten: `wp --skip-plugins --skip-themes eval-file tests/storage-privacy.php` und `wp --skip-plugins --skip-themes eval-file tests/marketpress-source.php`. Sie prüfen unter anderem Routenregeln, Transaktions-Rollback, Migrationswiederholung, Datumsfehler, Sperren, Bereinigung, Widgets/Shortcodes und die nur lesende MarketPress-Quelle. Die CI-Matrix prüft PHP 8.0 bis 8.4 mit ClassicPress 2.7. Eine lokal bestandene Suite ersetzt keine juristische Prüfung.
+Weitere isolierte Suiten: `wp --skip-plugins --skip-themes eval-file tests/storage-privacy.php`, `wp --skip-plugins --skip-themes eval-file tests/marketpress-source.php` und `wp --skip-plugins --skip-themes eval-file tests/widget-output.php`. Sie prüfen unter anderem Routenregeln, Transaktions-Rollback, Migrationswiederholung, Datumsfehler, Sperren, Bereinigung, Widgets/Shortcodes, Ausgabe-Escaping und die nur lesende MarketPress-Quelle. Die CI-Matrix prüft PHP 8.0 bis 8.4 mit ClassicPress 2.7. Eine lokal bestandene Suite ersetzt keine juristische Prüfung.
 
 ### Unterstützung ###
 Wenn Du Probleme hast oder glaubst, einen Fehler gefunden zu haben (z.B. ein unerwartetes Verhalten), lass uns Bitte eine [Fehlermeldung] (https://github.com/Power-Source/ps-stats/issues) zukommen.
@@ -74,6 +74,7 @@ Wenn Du Probleme hast oder glaubst, einen Fehler gefunden zu haben (z.B. ein une
 * Vorhandene MarketPress-Statistik als optionale, nur lesende Monatsquelle eingebunden, ohne zusätzliche Shop-Erfassung.
 * Datenschutztexte, Fehlerhinweise, Systemstatus und mobile Darstellung überarbeitet.
 * Regressionstests und eine CI-Konfiguration für PHP 8.0 bis 8.4 ergänzt.
+* Gespeicherte Inhalte, URLs und Zusatztexte im beliebten-Inhalte-Widget kontextgerecht maskiert; Update-Manager-Hinweis gegen unsichere HTML-Ausgabe abgesichert.
 
 = 1.0.0 =
 * Erstveröffentlichung.
