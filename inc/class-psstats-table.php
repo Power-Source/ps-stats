@@ -33,7 +33,9 @@ class PSStats_Table {
 		$table = 'psstats';
 
 		// As array.
-		$wpdb->tables[] = $table;
+		if ( ! in_array( $table, $wpdb->tables, true ) ) {
+			$wpdb->tables[] = $table;
+		}
 
 		// With prefix.
 		$wpdb->$table = $wpdb->get_blog_prefix() . $table;
@@ -45,32 +47,46 @@ class PSStats_Table {
 	 *
 	 * @since   0.6.0
 	 * @version 1.2.4
+	 *
+	 * @return bool Whether the table exists after installation.
 	 */
 	public static function create() {
 
 		global $wpdb;
 
 		// If existent.
-		if ( $wpdb->get_var( "SHOW TABLES LIKE '$wpdb->psstats'" ) === $wpdb->psstats ) {
-			return;
+		$exists_query = $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $wpdb->psstats ) );
+		if ( $wpdb->get_var( $exists_query ) === $wpdb->psstats ) {
+			return true;
+		}
+		if ( '' !== $wpdb->last_error ) {
+			return false;
 		}
 
 		// Include.
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
 		// Create.
+		$charset = $wpdb->get_charset_collate();
 		dbDelta(
 			"CREATE TABLE `$wpdb->psstats` (
 			`id` bigint(20) unsigned NOT NULL auto_increment,
-			  `created` date NOT NULL default '0000-00-00',
+			  `created` date NOT NULL,
 			  `referrer` varchar(255) NOT NULL default '',
 			  `target` varchar(255) NOT NULL default '',
 			  PRIMARY KEY  (`id`),
 			  KEY `referrer` (`referrer`),
 			  KEY `target` (`target`),
 			  KEY `created` (`created`)
-			);"
+			) $charset;"
 		);
+
+		if ( $wpdb->get_var( $exists_query ) !== $wpdb->psstats ) {
+			return false;
+		}
+
+		delete_transient( 'psstats_data' );
+		return true;
 	}
 
 

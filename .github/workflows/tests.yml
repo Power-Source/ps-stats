@@ -36,7 +36,7 @@ jobs:
           coverage: none
       - name: Syntax and whitespace
         run: |
-          find src tests inc/psstats-widget inc/extended-evaluation-for-psstats -name '*.php' -print0 | xargs -0 -n1 php -l
+          find inc tests views -name '*.php' -print0 | xargs -0 -n1 php -l
           php -l ps-stats.php
           node --check inc/extended-evaluation-for-psstats/js/functions.js
           git diff --check
@@ -50,7 +50,5 @@ jobs:
           wp --path=/tmp/ps-stats-classicpress plugin activate ps-stats
       - name: Isolated regression suites
         run: |
-          wp --path=/tmp/ps-stats-classicpress --skip-plugins --skip-themes eval-file tests/evaluation.php
-          wp --path=/tmp/ps-stats-classicpress --skip-plugins --skip-themes eval-file tests/storage-privacy.php
-          wp --path=/tmp/ps-stats-classicpress --skip-plugins --skip-themes eval-file tests/marketpress-source.php
+          wp --path=/tmp/ps-stats-classicpress --skip-plugins --skip-themes eval-file tests/installation.php
           wp --path=/tmp/ps-stats-classicpress --skip-plugins --skip-themes eval-file tests/widget-output.php

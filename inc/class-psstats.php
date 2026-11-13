@@ -42,6 +42,7 @@ class PSStats {
 
 		// Table init.
 		PSStats_Table::init();
+		PSStats_Install::maybe_install();
 
 		// Plugin options.
 		self::$_options = wp_parse_args(

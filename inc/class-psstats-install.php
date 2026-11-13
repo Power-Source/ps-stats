@@ -73,7 +73,22 @@ class PSStats_Install {
 		// Cleanup any leftover transients.
 		delete_transient( 'psstats_data' );
 
-		// Set up the cron event.
+		PSStats_Table::init();
+		self::maybe_install();
+	}
+
+	/**
+	 * Ensure storage and cleanup also exist after an update or database restore.
+	 *
+	 * @return bool Whether the statistics table is available.
+	 */
+	public static function maybe_install() {
+		if ( ! PSStats_Table::create() ) {
+			add_action( 'admin_notices', array( __CLASS__, 'print_install_error' ) );
+			return false;
+		}
+
+		remove_action( 'admin_notices', array( __CLASS__, 'print_install_error' ) );
 		if ( ! wp_next_scheduled( 'psstats_cleanup' ) ) {
 			wp_schedule_event(
 				time(),
@@ -82,8 +97,19 @@ class PSStats_Install {
 			);
 		}
 
-		// Create the actual tables.
-		PSStats_Table::init();
-		PSStats_Table::create();
+		return true;
+	}
+
+	/**
+	 * Display an installation failure without hiding database errors.
+	 */
+	public static function print_install_error() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		echo '<div class="notice notice-error"><p>';
+		esc_html_e( 'PS Stats konnte die Statistiktabelle nicht anlegen. Bitte prüfe die Datenbankrechte und das Fehlerprotokoll.', 'psstats' );
+		echo '</p></div>';
 	}
 }
