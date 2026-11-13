@@ -5,7 +5,7 @@
  * Text Domain: psstats
  * Author:      DerN3rd
  * Author URI:  https://github.com/Power-Source
- * Plugin URI:  https://power-source.github.io/ps-stats/
+ * Plugin URI:  https://psource.eimen.net/psource/ps-stats/
  * License:     GPLv3 or later
  * Version:     1.0.2
  * Domain Path: languages
